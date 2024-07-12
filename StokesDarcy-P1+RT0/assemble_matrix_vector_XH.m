@@ -6,7 +6,8 @@ global number_of_elements
 global dof_Stokes dof_Darcy
 global P T E alpha_T gamma_tilde
 
-BC = 'III';
+BC = 'IV';
+beta_t = alpha_BJS*nu^(1/2)*K^(-1/2);
 
 hx = (xr-xl)/(2*Nx); hy = (yt-yb)/Ny;
 %%%  us = ul+uR;  ud = ul; 
@@ -38,7 +39,7 @@ end
 Eb_test_ps = Eb_trial_ps;  number_of_local_basis_test_ps = 1;
 % pd
 Eb_trial_pd = Eb_trial_ps;  number_of_local_basis_trial_pd = 1; 
-Eb_test_pd = Eb_trial_ps;  number_of_local_basis_test_pd = 1; 
+Eb_test_pd = Eb_trial_ps;   number_of_local_basis_test_pd = 1; 
 
 % Omega_s
 % a(ul,vl)
@@ -59,16 +60,16 @@ A8 = assemble_matrix('s',para.negativeone,dof_ps,dof_uR,Eb_test_uR,Eb_trial_ps,G
 A9 = assemble_matrix('s',para.negativeone,dof_ps,dof_uR,Eb_test_uR,Eb_trial_ps,Gauss_weights_ref_2D,Gauss_nodes_ref_2D,number_of_local_basis_trial_ps,number_of_local_basis_test_uR,basis_type_trial_p,0,0,0,basis_type_test_uR,2,0,1);
 
 % Interface terms
-I1 = alpha_BJS*K^(-1/2)*assemble_matrix_interface('s',para.nu,dof_ul,dof_ul,Tb_test_ul,Tb_trial_ul,Gauss_weights_ref_1D,Gauss_nodes_ref_1D,number_of_local_basis_trial_ul,number_of_local_basis_test_ul,basis_type_trial_ul,1,0,0,basis_type_test_ul,1,0,0);
+I1 = beta_t*assemble_matrix_interface('s',para.one,dof_ul,dof_ul,Tb_test_ul,Tb_trial_ul,Gauss_weights_ref_1D,Gauss_nodes_ref_1D,number_of_local_basis_trial_ul,number_of_local_basis_test_ul,basis_type_trial_ul,1,0,0,basis_type_test_ul,1,0,0);
 I2 = 2*assemble_matrix_interface('s',para.nu,dof_ul,dof_uR,Eb_test_uR,Tb_trial_ul,Gauss_weights_ref_1D,Gauss_nodes_ref_1D,number_of_local_basis_trial_ul,number_of_local_basis_test_uR,basis_type_trial_ul,0,1,0,basis_type_test_uR,1,0,0);
 % similar to DG method, add a term to guarantee the coercivity 
 I3 = assemble_matrix_interface('s',para.nu,dof_uR,dof_uR,Eb_test_uR,Eb_trial_uR,Gauss_weights_ref_1D,Gauss_nodes_ref_1D,number_of_local_basis_trial_uR,number_of_local_basis_test_uR,basis_type_trial_uR,1,0,0,basis_type_test_uR,1,0,0);
 
 % Omega_d 
 % a(ud,vd)
-Ad1 = K^(-1)*assemble_matrix('d',para.nu,dof_uR,dof_uR,Eb_test_uR,Eb_trial_uR,Gauss_weights_ref_2D,Gauss_nodes_ref_2D,...
+Ad1 = K^(-1)*assemble_matrix('d',para.one,dof_uR,dof_uR,Eb_test_uR,Eb_trial_uR,Gauss_weights_ref_2D,Gauss_nodes_ref_2D,...
     number_of_local_basis_trial_uR,number_of_local_basis_test_uR,basis_type_trial_uR,1,0,0,basis_type_test_uR,1,0,0);
-Ad2 = K^(-1)*assemble_matrix('d',para.nu,dof_uR,dof_uR,Eb_test_uR,Eb_trial_uR,Gauss_weights_ref_2D,Gauss_nodes_ref_2D,...
+Ad2 = K^(-1)*assemble_matrix('d',para.one,dof_uR,dof_uR,Eb_test_uR,Eb_trial_uR,Gauss_weights_ref_2D,Gauss_nodes_ref_2D,...
     number_of_local_basis_trial_uR,number_of_local_basis_test_uR,basis_type_trial_uR,2,0,0,basis_type_test_uR,2,0,0);
 % b(ud,pd)
 Bd1 = assemble_matrix('d',para.negativeone,dof_pd,dof_uR,Eb_test_uR,Eb_trial_pd,Gauss_weights_ref_2D,Gauss_nodes_ref_2D,...
@@ -115,7 +116,7 @@ Ib2 = assemble_vector_Interface('s',para.eta1,dof_uR,Eb_test_uR,Gauss_weights_re
         number_of_local_basis_test_uR,basis_type_test_uR,1,0,0);
 Ib3 = assemble_vector_Interface('s',para.eta2,dof_ul,Tb_test_ul,Gauss_weights_ref_1D,Gauss_nodes_ref_1D,...
         number_of_local_basis_test_ul,basis_type_test_ul,2,0,0);
-bs = [bs1-Ib1;bs2-Ib3;bs3+bs4-Ib2;bs5;];
+bs = [bs1-Ib1;bs2+Ib3;bs3+bs4-Ib2;bs5;];
 bd = [bd1+bd2;bd3];
 b0 = [bs;bd];
 

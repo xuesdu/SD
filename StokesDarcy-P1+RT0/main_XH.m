@@ -13,11 +13,11 @@ gamma_tilde = 1e6;
 Gpn = 9;       % Gpn = 4 not pressure robust
 
 e_us = [];  e_ps = [];  e_ud = [];  e_pd = [];
-
+cond_number = 0; cond_number_2 = 0;  
 temp = 0;
-for ch = 1:4
+for ch = 4:4
     temp = temp+1;
-    prog = select(3,ch);
+    prog = select(1,ch);
     if prog.end == 1
         return
     end
@@ -47,8 +47,8 @@ for ch = 1:4
         Gauss_weights_ref_2D,Gauss_nodes_ref_2D,Gauss_weights_ref_1D,Gauss_nodes_ref_1D);
     
     % linear solve
-%     iter = 0; cond_number = 0;
-%     solution_0 = A\b;
+    %iter = 0; cond_number = 0;
+    %solution_0 = A\b;
 
     %test_stokes;
     %test_darcy;
@@ -56,7 +56,7 @@ for ch = 1:4
     %===============================================
     % block preconditioners
     maxit = 1000;
-    restart = 100;
+    restart = 1000;
     tol = 1e-6;   % when using AMG, if tol = 1e-6, the ps can't obtain the optimal order
 
     % reordering
@@ -90,7 +90,7 @@ for ch = 1:4
 
     % set parameters that can be tuned
     weight_s = 100; omega_s = weight_s*nu;  
-    weight_d = 1; omega_d = weight_d*nu*K^(-1);
+    weight_d = 1; omega_d = weight_d*K^(-1);
     
     %%% F1
     Pu = Auu + Aup*[omega_s*invMps, sparse(N_ps, N_pd); sparse(N_pd, N_ps), omega_d*invMpd]*Apu;
@@ -98,10 +98,10 @@ for ch = 1:4
     PA = [Pu, sparse(Nu, Np); sparse(Np, Nu), Pp]; % block diagonal
     %PA = [Pu, Aup; sparse(Np, Nu), Pp]; % block diagonal
     %%% ================= Verify inf-sup condition ==================
-        S = Apu*(Pu)^(-1)*Aup;
-        I = eye(size(S));
-        beta_inf = eigs(S+(1e-12)*I, Pp, 6, 'smallestabs', 'IsSymmetricDefinite', 1);
-        fprintf('beta_inf = %.2e, \n', beta_inf);
+%         S = Apu*(Pu)^(-1)*Aup;
+%         I = eye(size(S));
+%         beta_inf = eigs(S+(1e-12)*I, Pp, 6, 'smallestabs', 'IsSymmetricDefinite', 1);
+%         fprintf('beta_inf = %.2e, \n', beta_inf);
         
         
 % %     %%% F2 
@@ -109,40 +109,42 @@ for ch = 1:4
 % %     Pp = [(1/omega_s)*Mps, sparse(N_ps, N_pd); sparse(N_pd, N_ps), Mpd + Bd*inv(Aud)*Bd_tran];
 % %     PA = [Pu, sparse(Nu, Np); sparse(Np, Nu), Pp]; % block diagonal
 % %     
-%     % set AMG parameters for Pu
-% %     amgParam = init_AMG_param;
-% %     amgParam.print_level = 0;
-% %     amgParam.amg_type = 'UA';
-% %     amgParam.max_level = 2;
-% %     amgParam.Schwarz_level = 0;  % 1:use block smoother; 
-% 
-%     % get blocks for Schwarz methods
-%     [blk_Stokes, blk_Darcy, Blk_Stokes, Blk_Darcy] = generate_block_index(Nx, Ny, dof_ul, dof_uR);
-%     blocks = [blk_Stokes, sparse(size(blk_Stokes,1),size(blk_Darcy,2)-(Ny+1));
-%               sparse(size(blk_Darcy,1),size(blk_Stokes,2)-(Ny+1)), blk_Darcy];
-%     %blocks = [Blk_Stokes, sparse(size(Blk_Stokes,1),size(Blk_Darcy,2)-(Ny+1));
-%     %         sparse(size(Blk_Darcy,1),size(Blk_Stokes,2)-(Ny+1)), Blk_Darcy];
-% %     amgParam.Schwarz_blocks = num2cell(blocks',2);
-% %     for i = 1:length(amgParam.Schwarz_blocks)
-% %         [~,~,amgParam.Schwarz_blocks{i}] = find(amgParam.Schwarz_blocks{i});
-% %     end
-% 
-%     % AMG setup for Pu
-%     %amgData = AMG_Setup(Pu, amgParam);
-% 
-    [u_reorder, iter] = Prec_FGMRES(A_reorder, b_reorder, zeros(length(b),1), [], PA, maxit, restart, tol, 0);
-%     %[u_reorder, iter] = Prec_FGMRES(A_reorder, b_reorder, zeros(length(b),1), [], @(r)prec_diag_exact(r, Pu, diag_invMps, diag_invMpd, omega_s, omega_d), maxit, restart, tol, 0);
-%     %%% inexact solve 
-%     %[u_reorder, iter] = Prec_FGMRES(A_reorder, b_reorder, zeros(length(b),1), [], @(r)prec_diag_inexact(r, Pu, diag_invMps, diag_invMpd, omega_s, omega_d, amgParam, amgData), maxit, restart, tol, 3);
+    % set AMG parameters for Pu
+    amgParam = init_AMG_param;
+    amgParam.print_level = 0;
+    amgParam.amg_type = 'UA';
+    amgParam.max_level = 2;
+    amgParam.Schwarz_level = 0;  % 1:use block smoother; 
+
+    % get blocks for Schwarz methods
+    [blk_Stokes, blk_Darcy, Blk_Stokes, Blk_Darcy] = generate_block_index(Nx, Ny, dof_ul, dof_uR);
+    blocks = [blk_Stokes, sparse(size(blk_Stokes,1),size(blk_Darcy,2)-(Ny+1));
+              sparse(size(blk_Darcy,1),size(blk_Stokes,2)-(Ny+1)), blk_Darcy];
+    %blocks = [Blk_Stokes, sparse(size(Blk_Stokes,1),size(Blk_Darcy,2)-(Ny+1));
+    %         sparse(size(Blk_Darcy,1),size(Blk_Stokes,2)-(Ny+1)), Blk_Darcy];
+    amgParam.Schwarz_blocks = num2cell(blocks',2);
+    for i = 1:length(amgParam.Schwarz_blocks)
+        [~,~,amgParam.Schwarz_blocks{i}] = find(amgParam.Schwarz_blocks{i});
+    end
+
+    % AMG setup for Pu
+    amgData = AMG_Setup(Pu, amgParam);
+
+    %[u_reorder, iter] = Prec_FGMRES(A_reorder, b_reorder, zeros(length(b),1), [], PA, maxit, restart, tol, 0);
+    %[u_reorder, iter] = Prec_FGMRES(A_reorder, b_reorder, zeros(length(b),1), [], @(r)prec_diag_exact(r, Pu, diag_invMps, diag_invMpd, omega_s, omega_d), maxit, restart, tol, 0);
+    %%% inexact solve 
+    [u_reorder, iter] = Prec_FGMRES(A_reorder, b_reorder, zeros(length(b),1), [], @(r)prec_diag_inexact(r, Pu, diag_invMps, diag_invMpd, omega_s, omega_d, amgParam, amgData), maxit, restart, tol, 3);
     solution_0 = u_reorder(put_back_order);
     
     %%% ========== condition number ===================
-    A_reorder = (A_reorder+A_reorder')/2;
-    PA = (PA+PA')/2;
-    eig_max = eigs(A_reorder + (1e-12)*PA, PA, 6, 'largestabs', 'IsSymmetricDefinite', 1);
-    eig_min = eigs(A_reorder + (1e-12)*PA, PA, 6, 'smallestabs', 'IsSymmetricDefinite', 1);
-    cond_number = abs(eig_max(1))/abs(eig_min(1));
-
+%     A_reorder = (A_reorder+A_reorder')/2;
+%     PA = (PA+PA')/2;
+%     eig_max = eigs(A_reorder + (1e-12)*PA, PA, 6, 'largestabs', 'IsSymmetricDefinite', 1);
+%     eig_min = eigs(A_reorder + (1e-12)*PA, PA, 6, 'smallestabs', 'IsSymmetricDefinite', 1);
+%     cond_number = abs(eig_max(1))/abs(eig_min(1));
+%     cond_number_2 = abs(eig_max(1))/abs(eig_min(2));
+    
+ 
     solution_0 = Proj*solution_0;
     solution = solution_0 + solution_g;
 
@@ -155,6 +157,7 @@ for ch = 1:4
     pd = solution(dof_Stokes+dof_ud+1:dof_Stokes+dof_Darcy);
     
     fprintf("nu = %.0e, K = %0.e, cond_number = %.2f\n", nu, K, cond_number);
+    fprintf("cond_number_2 = %.2f\n",cond_number_2);
     % L2 模
     Tb_trial_ul = T(:,1:number_of_elements/2); Eb_trial_uR = E(:,1:number_of_elements/2);
     for i = 1:number_of_elements/2
@@ -169,7 +172,7 @@ for ch = 1:4
     error_L2_ud1 = Error_L2_ud(2,ud,para.ud1,Eb_trial_uR,Gpn,2011,1,0,0);
     error_L2_ud2 = Error_L2_ud(2,ud,para.ud2,Eb_trial_uR,Gpn,2011,2,0,0);
     error_L2_ud = sqrt(error_L2_ud1^2 + error_L2_ud2^2);
-    error_L2_pd = K*Error_L2_ud(2,pd,para.pd,Eb_trial_p,Gpn,200,0,0,0);
+    error_L2_pd = Error_L2_ud(2,pd,para.pd,Eb_trial_p,Gpn,200,0,0,0);
     
     
     if temp == 1
