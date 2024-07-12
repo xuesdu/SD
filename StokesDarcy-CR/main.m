@@ -12,9 +12,9 @@ basis_type_trial_p = 200;basis_type_test_p = 200;
 
 e_us = []; e_ps = []; e_ud = []; e_pd = [];
 pp = 0;
-for ch = 0:3
+for ch = 0:4
     pp = pp+1;
-    prog = select(3,ch);
+    prog = select(1,ch);
     if prog.end == 1
         return
     end
@@ -22,8 +22,9 @@ for ch = 0:3
     para = set_parameter(dir);
     
     nu = para.nu(0,0);  K = para.K(0,0); alpha_BJS = para.alpha_BJS(0,0);
+    beta_t = alpha_BJS*nu^(1/2)*K^(-1/2);
     %%% ========= penalizling parameter =================
-    gamma_s = nu;  gamma_d = nu*K^(-1);     
+    gamma_s = nu;  gamma_d = K^(-1);     
     
     xl = para.box.left;    xr = para.box.right;   xbar = para.box.interface;
     yb = para.box.bottom;  yt = para.box.top;
@@ -68,7 +69,7 @@ for ch = 0:3
     
     %%% assemble matrix
     %%% Interface: <u\cdot t, v\cdot t>
-    I1 = alpha_BJS*K^(-1/2)*assemble_matrix_interface('s',para.nu,dof_us,dof_us,P,T,Inter,Eb_test_u,Eb_trial_u,Gauss_weights_ref_1D,Gauss_nodes_ref_1D,...
+    I1 = beta_t*assemble_matrix_interface('s',para.one,dof_us,dof_us,P,T,Inter,Eb_test_u,Eb_trial_u,Gauss_weights_ref_1D,Gauss_nodes_ref_1D,...
         number_of_local_basis_trial_u,number_of_local_basis_test_u,basis_type_trial_u,0,0,basis_type_test_u,0,0);
     %%% Stokes domain
     A1 = assemble_matrix('s',para.nu,dof_us,dof_us,number_of_elements,P,T,Eb_test_u,Eb_trial_u,Gauss_weights_ref_2D,Gauss_nodes_ref_2D,...
@@ -100,7 +101,7 @@ for ch = 0:3
     clear A1 A2 A3 B1 B2 Ss1 Ss2 Sta_s;
     
     %%% Darcy domain
-    A1 = K^(-1)*assemble_matrix('d',para.nu,dof_ud,dof_ud,number_of_elements,P,T,Eb_test_u,Eb_trial_u,Gauss_weights_ref_2D,Gauss_nodes_ref_2D,...
+    A1 = K^(-1)*assemble_matrix('d',para.one,dof_ud,dof_ud,number_of_elements,P,T,Eb_test_u,Eb_trial_u,Gauss_weights_ref_2D,Gauss_nodes_ref_2D,...
         number_of_local_basis_trial_u,number_of_local_basis_test_u,basis_type_trial_u,0,0,basis_type_test_u,0,0);
     % b(v,p)
     B1 = assemble_matrix('d',para.negativeone,dof_ud,dof_pd,number_of_elements,P,T,Eb_test_u,Eb_trial_p,Gauss_weights_ref_2D,Gauss_nodes_ref_2D,...
@@ -151,7 +152,7 @@ for ch = 0:3
     % stabilization
     %Sb_1 = assemble_stabilizer_vector(para.us1,dof_us,P,T,neighbors,number_of_elements,Eb_test_u,Gauss_weights_ref_1D,Gauss_nodes_ref_1D,number_of_local_basis_test_u,basis_type_test_u,0,0);
     %Sb_2 = assemble_stabilizer_vector(para.us2,dof_us,P,T,neighbors,number_of_elements,Eb_test_u,Gauss_weights_ref_1D,Gauss_nodes_ref_1D,number_of_local_basis_test_u,basis_type_test_u,0,0);
-    %bs = [bs1+gamma_s*Sb_1/hk-Ib1;bs2+gamma_s*Sb_2/hk+nu*Ib2;bs3];
+    %bs = [bs1+gamma_s*Sb_1/hk-Ib1;bs2+gamma_s*Sb_2/hk+Ib2;bs3];
     bs = [bs1-Ib1;bs2+Ib2;bs3];
     % Darcy domain: (f,Pi^R v)
     bd1 = assemble_vector_Projection('d',para.fd1,para.fd2,para,number_of_elements,P,T,dof_ud,Eb_test_u,Gauss_weights_ref_2D,Gauss_nodes_ref_2D,number_of_local_basis_test_u,basis_type_test_u,1,0,0);
@@ -209,7 +210,7 @@ for ch = 0:3
     %A(end, :) = 0;  A(:, end) = 0;  A(end, end) = 1; b(end) = exact_pd; 
     
     % direct solve
-    % u0 = A\b; iter = 0; cond_number = 0;
+    %u0 = A\b; iter = 0; cond_number = 0;
 
     %===============================================
     % % Block diagnoal preconditioner
@@ -242,7 +243,7 @@ for ch = 0:3
 
     weight_s = 100;  weight_d = 1; % a parameter that can be tuned
     omega_S = weight_s*nu;
-    omega_D = weight_d*nu*K^(-1);
+    omega_D = weight_d*K^(-1);
     Pu = Auu + Aup*[omega_S*invMps, sparse(N_ps,N_pd); sparse(N_pd,N_ps), omega_D*invMpd]*Apu;
     Pp = [1/omega_S*Mps, sparse(N_ps,N_pd); sparse(N_pd,N_ps), 1/omega_D*Mpd];
     PA = [Pu, sparse(Nu,Np); sparse(Np,Nu), Pp];
@@ -258,13 +259,15 @@ for ch = 0:3
     
     
     %%% ============== condition number ===================
-    A_reorder = (A_reorder+A_reorder')/2;
-    PA = (PA+PA')/2;
-    eig_max = eigs(A_reorder + (1e-12)*PA, PA, 6, 'largestabs', 'IsSymmetricDefinite', 1);
-    eig_min = eigs(A_reorder + (1e-12)*PA, PA, 6, 'smallestabs', 'IsSymmetricDefinite', 1);
-    cond_number = abs(eig_max(1))/abs(eig_min(1));
+%     A_reorder = (A_reorder+A_reorder')/2;
+%     PA = (PA+PA')/2;
+%     eig_max = eigs(A_reorder + (1e-12)*PA, PA, 6, 'largestabs', 'IsSymmetricDefinite', 1);
+%     eig_min = eigs(A_reorder + (1e-12)*PA, PA, 6, 'smallestabs', 'IsSymmetricDefinite', 1);
+%     cond_number = abs(eig_max(1))/abs(eig_min(1));
+%     cond_number_2 = abs(eig_max(1))/abs(eig_min(2));
+      cond_number = 0; cond_number_2 = 0;
 
-    [V,beta_inf] = eigs(A_reorder, PA, 10, 'smallestabs', 'IsSymmetricDefinite', 1);
+%     [V,beta_inf] = eigs(A_reorder, PA, 10, 'smallestabs', 'IsSymmetricDefinite', 1);
     
     
     % set AMG parameters for Pu
@@ -287,8 +290,8 @@ for ch = 0:3
 %         [~,~,amgParam.Schwarz_blocks{i}] = find(amgParam.Schwarz_blocks{i});
 %     end
     
-%     % AMG setup for Pu
-%     amgData = AMG_Setup(Pu, amgParam);
+    % AMG setup for Pu
+    %amgData = AMG_Setup(Pu, amgParam);
     
     [u_reorder,iter] = Prec_FGMRES(A_reorder, b_reorder, sparse(length(b),1), [], PA, maxit, restart, tol, 0);
     %[u_reorder, iter] = Prec_FGMRES(A_reorder, b_reorder, zeros(length(b),1), [], @(r)prec_diag_exact(r, Pu, diag_invMps, diag_invMpd, omega), maxit, restart, tol, 0);
@@ -300,8 +303,11 @@ for ch = 0:3
     solution_g = [solution_sg;solution_dg];
     solution = solution_0 + solution_g;
     
-    us1 = solution(1:dof_us);   us2 = solution(dof_us+1:dof_us*2); ps = solution(2*dof_us+1:dof_Stokes);
-    ud1 = solution(dof_Stokes+1:dof_Stokes+dof_ud); ud2 = solution(dof_Stokes+dof_ud+1:dof_Stokes+dof_ud*2);
+    us1 = solution(1:dof_us);   
+    us2 = solution(dof_us+1:dof_us*2); 
+    ps = solution(2*dof_us+1:dof_Stokes);
+    ud1 = solution(dof_Stokes+1:dof_Stokes+dof_ud); 
+    ud2 = solution(dof_Stokes+dof_ud+1:dof_Stokes+dof_ud*2);
     pd = solution(dof_Stokes+2*dof_ud+1:dof_Stokes+dof_Darcy);
     
     %%% L^2-norm error
@@ -322,7 +328,8 @@ for ch = 0:3
     error_H1_us2y = Error_L2('s',us2,para.us2_y,P,T,Eb_trial_u,Gpn,basis_type_trial_u,0,1);
     error_H1_us = sqrt(error_H1_us1x^2 + error_H1_us1y^2 + error_H1_us2x^2 + error_H1_us2y^2);
     
-    fprintf('nu = %.0e, K = %.0e, cond_num = %.2f\n',nu, K, cond_number);
+    fprintf('nu = %.0e, K = %.0e, cond_num = %.2e\n',nu, K, cond_number);
+    fprintf('cond_number_2 = %.2f\n', cond_number_2);
 
     if pp == 1
         fprintf('%7.0f %s %7.2e %s %7.2f %s %7.2e %s %7.2f %s %7.2e %s %7.2f %s %7.2e %s %7.2f %s %d\n',Nx,...
@@ -371,8 +378,8 @@ end
 % draw_u(ud2,para.ud2,P2,T,E,number_of_elements);
 % draw_p(pd,para.pd,P2,T,number_of_elements)
 
-% fid=fopen('result.txt','at');
-% fprintf(fid, '%.2e\t %.2e\t %.2e\t %.2e\t \n', e_us, e_ps, e_ud, e_pd);
-% fclose(fid);
+fid=fopen('result.txt','at');
+fprintf(fid, '%.2e\t %.2e\t %.2e\t %.2e\t \n', e_us, e_ps, e_ud, e_pd);
+fclose(fid);
 
 

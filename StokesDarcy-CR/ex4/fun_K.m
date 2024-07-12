@@ -1,3 +1,3 @@
 function out = fun_K(x,y)
 
-out = 1e-4;
+out = 1e-2;
