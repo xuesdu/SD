@@ -1,4 +1,4 @@
-function [A0, b0, A, b, Proj, solution_g] = assemble_matrix_vector_XH(para,Nx,Ny,dof_ul,dof_uR,dof_ps,...
+function [A0, b0, A, b, Proj, solution_g] = assemble_matrix_vector_XH(para,MC,Nx,Ny,dof_ul,dof_uR,dof_ps,...
     dof_ud,dof_pd,Gauss_weights_ref_2D,Gauss_nodes_ref_2D,Gauss_weights_ref_1D,Gauss_nodes_ref_1D)
 
 global xl xbar xr yb yt nu K alpha_BJS
@@ -6,7 +6,7 @@ global number_of_elements
 global dof_Stokes dof_Darcy
 global P T E alpha_T gamma_tilde
 
-BC = 'IV';
+BC = 'I';
 beta_t = alpha_BJS*nu^(1/2)*K^(-1/2);
 
 hx = (xr-xl)/(2*Nx); hy = (yt-yb)/Ny;
@@ -50,15 +50,14 @@ A3 = assemble_matrix('s',para.nu,dof_ul,dof_ul,Tb_test_ul,Tb_trial_ul,Gauss_weig
 A4 = assemble_matrix('s',para.negativeone,dof_ps,dof_ul,Tb_test_ul,Eb_trial_ps,Gauss_weights_ref_2D,Gauss_nodes_ref_2D,number_of_local_basis_trial_ps,number_of_local_basis_test_ul,basis_type_trial_p,0,0,0,basis_type_test_ul,0,1,0);
 A5 = assemble_matrix('s',para.negativeone,dof_ps,dof_ul,Tb_test_ul,Eb_trial_ps,Gauss_weights_ref_2D,Gauss_nodes_ref_2D,number_of_local_basis_trial_ps,number_of_local_basis_test_ul,basis_type_trial_p,0,0,0,basis_type_test_ul,0,0,1);
 % a(uR,vR)
-A6 = 2*assemble_matrix_Stokes_RT0('s',para.nu,dof_uR,dof_uR,Eb_test_uR,Eb_trial_uR,Gauss_weights_ref_2D,Gauss_nodes_ref_2D,number_of_local_basis_trial_uR,number_of_local_basis_test_uR,basis_type_trial_uR,1,1,0,basis_type_test_uR,1,1,0);
-A7 = 2*assemble_matrix_Stokes_RT0('s',para.nu,dof_uR,dof_uR,Eb_test_uR,Eb_trial_uR,Gauss_weights_ref_2D,Gauss_nodes_ref_2D,number_of_local_basis_trial_uR,number_of_local_basis_test_uR,basis_type_trial_uR,2,0,1,basis_type_test_uR,2,0,1);
-A6_copy = 2*assemble_matrix_Stokes_RT0('s',para.nu,dof_uR,dof_uR,Eb_test_uR,Eb_trial_uR,Gauss_weights_ref_2D,Gauss_nodes_ref_2D,number_of_local_basis_trial_uR,number_of_local_basis_test_uR,basis_type_trial_uR,1,1,0,basis_type_test_uR,2,0,1);
-A7_copy = 2*assemble_matrix_Stokes_RT0('s',para.nu,dof_uR,dof_uR,Eb_test_uR,Eb_trial_uR,Gauss_weights_ref_2D,Gauss_nodes_ref_2D,number_of_local_basis_trial_uR,number_of_local_basis_test_uR,basis_type_trial_uR,2,0,1,basis_type_test_uR,1,1,0);
+A6 = assemble_matrix_Stokes_RT0('s',para.nu,dof_uR,dof_uR,Eb_test_uR,Eb_trial_uR,Gauss_weights_ref_2D,Gauss_nodes_ref_2D,number_of_local_basis_trial_uR,number_of_local_basis_test_uR,basis_type_trial_uR,1,1,0,basis_type_test_uR,1,1,0);
+A7 = assemble_matrix_Stokes_RT0('s',para.nu,dof_uR,dof_uR,Eb_test_uR,Eb_trial_uR,Gauss_weights_ref_2D,Gauss_nodes_ref_2D,number_of_local_basis_trial_uR,number_of_local_basis_test_uR,basis_type_trial_uR,2,0,1,basis_type_test_uR,2,0,1);
+A6_copy = assemble_matrix_Stokes_RT0('s',para.nu,dof_uR,dof_uR,Eb_test_uR,Eb_trial_uR,Gauss_weights_ref_2D,Gauss_nodes_ref_2D,number_of_local_basis_trial_uR,number_of_local_basis_test_uR,basis_type_trial_uR,1,1,0,basis_type_test_uR,2,0,1);
+A7_copy = assemble_matrix_Stokes_RT0('s',para.nu,dof_uR,dof_uR,Eb_test_uR,Eb_trial_uR,Gauss_weights_ref_2D,Gauss_nodes_ref_2D,number_of_local_basis_trial_uR,number_of_local_basis_test_uR,basis_type_trial_uR,2,0,1,basis_type_test_uR,1,1,0);
 Af_RR = alpha_T*(A6+A7+A6_copy+A7_copy);
 % b(vR,p)
 A8 = assemble_matrix('s',para.negativeone,dof_ps,dof_uR,Eb_test_uR,Eb_trial_ps,Gauss_weights_ref_2D,Gauss_nodes_ref_2D,number_of_local_basis_trial_ps,number_of_local_basis_test_uR,basis_type_trial_p,0,0,0,basis_type_test_uR,1,1,0);
 A9 = assemble_matrix('s',para.negativeone,dof_ps,dof_uR,Eb_test_uR,Eb_trial_ps,Gauss_weights_ref_2D,Gauss_nodes_ref_2D,number_of_local_basis_trial_ps,number_of_local_basis_test_uR,basis_type_trial_p,0,0,0,basis_type_test_uR,2,0,1);
-
 % Interface terms
 I1 = beta_t*assemble_matrix_interface('s',para.one,dof_ul,dof_ul,Tb_test_ul,Tb_trial_ul,Gauss_weights_ref_1D,Gauss_nodes_ref_1D,number_of_local_basis_trial_ul,number_of_local_basis_test_ul,basis_type_trial_ul,1,0,0,basis_type_test_ul,1,0,0);
 I2 = 2*assemble_matrix_interface('s',para.nu,dof_ul,dof_uR,Eb_test_uR,Tb_trial_ul,Gauss_weights_ref_1D,Gauss_nodes_ref_1D,number_of_local_basis_trial_ul,number_of_local_basis_test_uR,basis_type_trial_ul,0,1,0,basis_type_test_uR,1,0,0);
@@ -76,6 +75,19 @@ Bd1 = assemble_matrix('d',para.negativeone,dof_pd,dof_uR,Eb_test_uR,Eb_trial_pd,
     number_of_local_basis_trial_pd,number_of_local_basis_test_uR,basis_type_trial_p,0,0,0,basis_type_test_uR,1,1,0);
 Bd2 = assemble_matrix('d',para.negativeone,dof_pd,dof_uR,Eb_test_uR,Eb_trial_pd,Gauss_weights_ref_2D,Gauss_nodes_ref_2D,...
     number_of_local_basis_trial_pd,number_of_local_basis_test_uR,basis_type_trial_p,0,0,0,basis_type_test_uR,2,0,1);
+
+
+% different boundary condition 
+[bn_s,be_s] = generate_boundary_nodes_edges_Omegaf(Nx_basis_ul,Ny_basis_ul,Nx,Ny,BC);
+[bn_d,be_d] = generate_boundary_nodes_edges_Omegap(Nx_basis_ul,Ny_basis_ul,Nx,Ny,BC);
+% Neumann boundary integral terms
+AB1 = assemble_matrix_boundary(be_s,para.nu,dof_ul,dof_uR,Eb_test_uR,Tb_trial_ul,Gauss_weights_ref_1D,Gauss_nodes_ref_1D,number_of_local_basis_trial_ul,number_of_local_basis_test_uR,...
+        basis_type_trial_ul,0,0,1,basis_type_test_uR,1,0,0);
+AB2 = assemble_matrix_boundary(be_s,para.nu,dof_ul,dof_uR,Eb_test_uR,Tb_trial_ul,Gauss_weights_ref_1D,Gauss_nodes_ref_1D,number_of_local_basis_trial_ul,number_of_local_basis_test_uR,...
+        basis_type_trial_ul,0,1,0,basis_type_test_uR,1,0,0);
+AB3 = assemble_matrix_boundary(be_s,para.nu,dof_ul,dof_uR,Eb_test_uR,Tb_trial_ul,Gauss_weights_ref_1D,Gauss_nodes_ref_1D,number_of_local_basis_trial_ul,number_of_local_basis_test_uR,...
+        basis_type_trial_ul,0,0,1,basis_type_test_uR,2,0,0);
+AB = [AB1 AB2+2*AB3]';
 % assemble total matrix
 Os1 = sparse(dof_ul,dof_uR); Os2 = sparse(dof_ps,dof_ps); 
 Af_LL = [2*A1+A2 A3; A3' 2*A2+A1+I1];  
@@ -83,9 +95,15 @@ Af_LR = [I2';Os1];
 % =========  gamma = -1 =================
 % Aus = [Af_LL  -Af_LR;
 %       Af_LR'   Af_RR];
+% ==== add boundary integral terms =====
+% Aus = [Af_LL     AB-Af_LR;
+%       AB'+Af_LR'  Af_RR];
 % ========= gamma = 1; add a term gamma_tilde(usR\cdot n, vsR\cdot n)_{Gamma}
-Aus = [Af_LL  Af_LR;
-      Af_LR'  Af_RR + gamma_tilde*I3];
+% Aus = [Af_LL       Af_LR;
+%       Af_LR'  Af_RR + gamma_tilde*I3];
+% ==== add boundary integral terms =====
+Aus = [Af_LL           AB+Af_LR;
+      AB'+Af_LR'  Af_RR + gamma_tilde*I3];
 Gf_L = [A4;A5]; Gf_R = A8+A9; Bs = [Gf_L; Gf_R];
 As = [Aus Bs;
      Bs' Os2];
@@ -99,7 +117,6 @@ A0 = [As Asd;Asd' Ad];
 % assemble right hand vector
 bs1 = assemble_vector_Projection('s',para.fs1,para.fs2,para,dof_ul,Tb_test_ul,Gauss_weights_ref_2D,Gauss_nodes_ref_2D,number_of_local_basis_test_ul,basis_type_test_ul,1,0,0);
 bs2 = assemble_vector_Projection('s',para.fs1,para.fs2,para,dof_ul,Tb_test_ul,Gauss_weights_ref_2D,Gauss_nodes_ref_2D,number_of_local_basis_test_ul,basis_type_test_ul,2,0,0);
-
 % bs1 = assemble_vector('s',para.fs1,para,dof_ul,Tb_test_ul,Gauss_weights_ref_2D,Gauss_nodes_ref_2D,number_of_local_basis_test_ul,basis_type_test_ul,0,0,0);
 % bs2 = assemble_vector('s',para.fs2,para,dof_ul,Tb_test_ul,Gauss_weights_ref_2D,Gauss_nodes_ref_2D,number_of_local_basis_test_ul,basis_type_test_ul,0,0,0);
 bs3 = assemble_vector('s',para.fs1,para,dof_uR,Eb_test_uR,Gauss_weights_ref_2D,Gauss_nodes_ref_2D,number_of_local_basis_test_uR,basis_type_test_uR,1,0,0);
@@ -118,30 +135,27 @@ Ib3 = assemble_vector_Interface('s',para.eta2,dof_ul,Tb_test_ul,Gauss_weights_re
         number_of_local_basis_test_ul,basis_type_test_ul,2,0,0);
 bs = [bs1-Ib1;bs2+Ib3;bs3+bs4-Ib2;bs5;];
 bd = [bd1+bd2;bd3];
-b0 = [bs;bd];
 
-% different boundary condition 
-[bn_s,be_s] = generate_boundary_nodes_edges_Omegaf(Nx_basis_ul,Ny_basis_ul,Nx,Ny,BC);
-[bn_d,be_d] = generate_boundary_nodes_edges_Omegap(Nx_basis_ul,Ny_basis_ul,Nx,Ny,BC);
 %%% treat Darcy pressure p = g;
 % [A,b] = treat_Dirichlet_BC(para,A,b,bn_s,be_s,be_d,Pb_trial_ul,Eb_trial_uR,dof_ul,dof_ud,Nx,Ny);
 %%% treat Darcy velocity u\cdot n = g;
 % solution_g = sparse(dof_Stokes+dof_Darcy,1);
 % [A0,b0] = treat_boundary_condition(para,A0,b0,bn_s,be_s,be_d,Pb_trial_ul,Tb_trial_ul,dof_ul,Nx,Ny,Gauss_weights_ref_1D,Gauss_nodes_ref_1D);
 
-% Neumann part
+% ================ Neumann part =====================
 % % Stokes: P1
-[bg1, bg2] = treat_Neumann_BC_Stokes(para, be_s, dof_ul, Tb_test_ul, hx, 201);
+[bg1, bg2] = treat_Neumann_BC_Stokes(para, be_s, dof_ul, Tb_test_ul, hx, 201, Gauss_weights_ref_1D, Gauss_nodes_ref_1D);
 % % Stokes: RT0
-[bR1, bR2] = treat_Neumann_BC_Stokes(para, be_s, dof_uR, Eb_test_uR, hx, 2011);
+[bR1, bR2] = treat_Neumann_BC_Stokes(para, be_s, dof_uR, Eb_test_uR, hx, 2011,  Gauss_weights_ref_1D, Gauss_nodes_ref_1D);
+%bgs = [bg1; bg2; sparse(dof_uR,1); sparse(dof_ps,1)];
 bgs = [bg1; bg2; bR1+bR2; sparse(dof_ps,1)];
 bs = bs + bgs;
 % % Darcy: RT0
 bdp = treat_Neumann_BC_Darcy(para, be_d, dof_ud, Eb_test_uR, Nx, Ny, hx);
 bd = bd - [bdp; sparse(dof_pd,1)];
-
 b0 = [bs; bd];
-% Dirichlet part 
+
+% ===============  Dirichlet part =====================
 us1g = generate_nonhomogeneous_BC('s',para,bn_s,dof_ul);
 usRg = sparse(dof_uR,1);
 udg = generate_nonhomogeneous_BC_RT0('d',para,be_d,dof_uR,0,Gauss_weights_ref_1D,Gauss_nodes_ref_1D,Nx,Ny);
@@ -150,12 +164,17 @@ b0 = b0 - A0*solution_g;
 [A0,b0] = treat_homogeneous_boundary_condition(A0,b0,bn_s,be_s,be_d,dof_ul);
 
 %%% treat mass conservation on the interface
-Proj = treat_interface_condition(para,dof_ul,Gauss_weights_ref_1D,Gauss_nodes_ref_1D,Ny);
-A = Proj'*A0*Proj;  b = Proj'*b0;
+if strcmp(MC,'Weakly')
+    Proj = treat_interface_condition(para,dof_ul,Gauss_weights_ref_1D,Gauss_nodes_ref_1D,Ny);
+    A = Proj'*A0*Proj;  b = Proj'*b0;
+else
+    Proj = treat_interface_condition_Strongly(para,dof_ul,Gauss_weights_ref_1D,Gauss_nodes_ref_1D,Ny);
+    A = Proj'*A0*Proj;  b = Proj'*b0;
+end
 
 %%% F1: integral value(treat pressure condition)
 % A(dof_Stokes,:) = 0;
-% A(dof_Stokes,2*dof_ul+dof_uR+1:dof_Stokes) = hx^2/2;
+% A(dof_Stokes,2*dof_ul-Ny+dof_uR+1:dof_Stokes) = hx^2/2;
 % b(dof_Stokes) = para.int_ps;
 % A(end,:) = 0;
 % A(end,dof_Stokes+(dof_uR-Ny)+1:end) = hx^2/2;

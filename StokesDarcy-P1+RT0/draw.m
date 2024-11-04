@@ -14,6 +14,6 @@ end
 [Xu,Yu] = meshgrid(xl:hx_basis_u:xbar,yb:hy_basis_u:yt);
 uh1 = reshape(u1,Nx_u+1,Ny_u+1); U1 = reshape(u1_exact,Nx_u+1,Ny_u+1); e1 = uh1-U1;
 uh2 = reshape(u2,Nx_u+1,Ny_u+1); U2 = reshape(u2_exact,Nx_u+1,Ny_u+1); e2 = uh2-U2;
-figure(1); subplot(1,3,1); surf(Xu,Yu,uh1); subplot(1,3,2); surf(Xu,Yu,U1); subplot(1,3,3); surf(Xu,Yu,e1); 
-figure(2); subplot(1,3,1); surf(Xu,Yu,uh2); subplot(1,3,2); surf(Xu,Yu,U2); subplot(1,3,3); surf(Xu,Yu,e2); 
+figure; subplot(1,3,1); surf(Xu,Yu,uh1); subplot(1,3,2); surf(Xu,Yu,U1); subplot(1,3,3); surf(Xu,Yu,e1); 
+figure; subplot(1,3,1); surf(Xu,Yu,uh2); subplot(1,3,2); surf(Xu,Yu,U2); subplot(1,3,3); surf(Xu,Yu,e2); 
 
