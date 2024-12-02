@@ -6,6 +6,8 @@ global xl xr yb yt xbar nu K alpha_BJS
 Gpn = 9;    % Gauss point number
 % I: no kernel; II: a kernel; III: near kernel on Darcy; IV: near kernel on Stokes;
 BC = 'IV';
+% MC = 'Strongly';
+MC = 'Weakly';  % weakly imposing the interface condition
 
 basis_type_trial_u = 201;basis_type_test_u = 201;
 basis_type_trial_p = 200;basis_type_test_p = 200;
@@ -23,6 +25,9 @@ for ch = 0:4
     
     nu = para.nu(0,0);  K = para.K(0,0); alpha_BJS = para.alpha_BJS(0,0);
     beta_t = alpha_BJS*nu^(1/2)*K^(-1/2);
+    if pp == 1
+        fprintf('nu = %.0e, K = %.0e \n',nu, K);
+    end
     %%% ========= penalizling parameter =================
     gamma_s = nu;  gamma_d = K^(-1);     
     
@@ -192,8 +197,12 @@ for ch = 0:4
     A = Proj'*A*Proj; b = Proj'*b;
     
     % Treat mass conservation
-    dof_Darcy_new = size(b,1)-dof_Stokes;
-    Proj_I = assemble_projection_matrix_interface(dof_Stokes,dof_Darcy_new,E,Inter,Ny);
+    dof_Darcy_new = size(b,1)-dof_Stokes;  % the dofs after treating the boundary conditions
+    if strcmp(MC,'Weakly')
+        Proj_I = assemble_projection_matrix_interface(dof_Stokes,dof_Darcy_new,E,Inter,Ny);
+    else
+        Proj_I = assemble_projection_matrix_interface_Strongly(dof_Stokes,dof_Darcy_new,E,Inter,Ny);
+    end
     A = Proj_I'*A*Proj_I; b = Proj_I'*b; 
     
     
@@ -214,14 +223,23 @@ for ch = 0:4
 
     %===============================================
     % % Block diagnoal preconditioner
-    maxit = 1000;  restart = 1000; tol = 1e-6;
+    maxit = 1000;  restart = 1000; tol = 1e-12;
     % reordering
-    N_us = 2*dof_us;
-    N_ps = dof_Stokes - N_us;
-    N_ud = dof_Darcy_new - dof_pd - Ny;
-    N_pd = dof_pd;
-    Nu = N_us + N_ud;
-    Np = N_ps + N_pd;
+    if strcmp(MC,'Weakly')
+        N_us = 2*dof_us;
+        N_ps = dof_Stokes - N_us;
+        N_ud = dof_Darcy_new - dof_pd - Ny;
+        N_pd = dof_pd;
+        Nu = N_us + N_ud;
+        Np = N_ps + N_pd;
+    else
+        N_us = 2*dof_us;
+        N_ps = dof_Stokes - N_us;
+        N_ud = dof_Darcy_new - dof_pd - 2*Ny;
+        N_pd = dof_pd;
+        Nu = N_us + N_ud;
+        Np = N_ps + N_pd;
+    end
     % new order: us ud ps pd
     new_dof_order = [1:N_us, dof_Stokes+1:dof_Stokes+N_ud, N_us+1:dof_Stokes, dof_Stokes+N_ud+1:dof_Stokes+N_ud+N_pd];
     [~,put_back_order] = sort(new_dof_order);
@@ -249,27 +267,26 @@ for ch = 0:4
     PA = [Pu, sparse(Nu,Np); sparse(Np,Nu), Pp];
 
     %%% ================= Verify inf-sup condition ==================
-%     S = Apu*(Pu)^(-1)*Aup;
-%     I = speye(size(S));
-%     beta_inf = eigs(S + (1e-12)*I, Pp, 6, 'smallestabs');
-%     fprintf('beta_inf = %.2e, \n', beta_inf);
+    S = Apu*(Pu)^(-1)*Aup;
+    I = speye(size(S));
+    eig_min_Schur = eigs(S + (1e-12)*I, Pp, 6, 'smallestabs');
+    beta_inf = sqrt(eig_min_Schur);
+    fprintf('beta_inf = %.2e, \n', beta_inf(1));
     
 %     kernel = [zeros(Nu,1); ones(N_ps,1)./2; ones(N_pd,1)];
 %     ANS = A_reorder*kernel;
     
     
     %%% ============== condition number ===================
-%     A_reorder = (A_reorder+A_reorder')/2;
-%     PA = (PA+PA')/2;
-%     eig_max = eigs(A_reorder + (1e-12)*PA, PA, 6, 'largestabs', 'IsSymmetricDefinite', 1);
-%     eig_min = eigs(A_reorder + (1e-12)*PA, PA, 6, 'smallestabs', 'IsSymmetricDefinite', 1);
-%     cond_number = abs(eig_max(1))/abs(eig_min(1));
-%     cond_number_2 = abs(eig_max(1))/abs(eig_min(2));
-      cond_number = 0; cond_number_2 = 0;
-
-%     [V,beta_inf] = eigs(A_reorder, PA, 10, 'smallestabs', 'IsSymmetricDefinite', 1);
+    A_reorder = (A_reorder+A_reorder')/2;
+    PA = (PA+PA')/2;
+    eig_max = eigs(A_reorder + (1e-12)*PA, PA, 6, 'largestabs', 'IsSymmetricDefinite', 1);
+    eig_min = eigs(A_reorder + (1e-12)*PA, PA, 6, 'smallestabs', 'IsSymmetricDefinite', 1);
+    cond_number = abs(eig_max(1))/abs(eig_min(1));
+    cond_number_2 = abs(eig_max(1))/abs(eig_min(2));
     
-    
+    [V,beta_inf] = eigs(A_reorder, PA, 6, 'smallestabs', 'IsSymmetricDefinite', 1);
+        
     % set AMG parameters for Pu
 %     amgParam = init_AMG_param;
 %     amgParam.print_level = 2;
@@ -293,10 +310,11 @@ for ch = 0:4
     % AMG setup for Pu
     %amgData = AMG_Setup(Pu, amgParam);
     
-    [u_reorder,iter] = Prec_FGMRES(A_reorder, b_reorder, sparse(length(b),1), [], PA, maxit, restart, tol, 0);
+    [u_reorder,iter,residual] = Prec_FGMRES(A_reorder, b_reorder, sparse(length(b),1), [], PA, maxit, restart, tol, 0);
     %[u_reorder, iter] = Prec_FGMRES(A_reorder, b_reorder, zeros(length(b),1), [], @(r)prec_diag_exact(r, Pu, diag_invMps, diag_invMpd, omega), maxit, restart, tol, 0);
     %[u_reorder, iter] = Prec_FGMRES(A_reorder, b_reorder, zeros(length(b),1), [], @(r)prec_diag_inexact(r, Pu, diag_invMps, diag_invMpd, omega_S, omega_D, amgParam, amgData), maxit, restart, tol, -1);
     u0 = u_reorder(put_back_order);
+    % semilogy(residual,'r*--'); hold on
     %===============================================
     
     solution_0 = Proj*Proj_I*u0;
@@ -328,14 +346,15 @@ for ch = 0:4
     error_H1_us2y = Error_L2('s',us2,para.us2_y,P,T,Eb_trial_u,Gpn,basis_type_trial_u,0,1);
     error_H1_us = sqrt(error_H1_us1x^2 + error_H1_us1y^2 + error_H1_us2x^2 + error_H1_us2y^2);
     
-    fprintf('nu = %.0e, K = %.0e, cond_num = %.2e\n',nu, K, cond_number);
-    fprintf('cond_number_2 = %.2f\n', cond_number_2);
+    
+    fprintf('cond_numer = %.2e, cond_number_eff = %.2f\n', cond_number, cond_number_2);
 
     if pp == 1
         fprintf('%7.0f %s %7.2e %s %7.2f %s %7.2e %s %7.2f %s %7.2e %s %7.2f %s %7.2e %s %7.2f %s %d\n',Nx,...
             '&',error_H1_us,'&',0,'&',error_L2_ps,'&',0,'&',error_L2_ud,'&',0,'&',error_L2_pd,'&',0,'&',iter);
     else
         error_H1_us_order = log2(error_H1_us_old/error_H1_us);
+        error_L2_us_order = log2(error_L2_us_old/error_L2_us);
         error_L2_ps_order = log2(error_L2_ps_old/error_L2_ps);
         error_L2_ud_order = log2(error_L2_ud_old/error_L2_ud);
         error_L2_pd_order = log2(error_L2_pd_old/error_L2_pd);
@@ -369,17 +388,17 @@ end
 
 
 % P1 = P(:,1:(Nx+1)*(Ny+1));
-% draw_u(us1,para.us1,P1,T,E,number_of_elements);
-% draw_u(us2,para.us2,P1,T,E,number_of_elements);
+% draw_u(us1,para.us1,P1,T,E,number_of_elements,'us1');
+% draw_u(us2,para.us2,P1,T,E,number_of_elements,'us2');
 % draw_p(ps,para.ps,P1,T,number_of_elements);
-% 
+
 % P2 = P(:,(Nx)*(Ny+1)+1:end);
-% draw_u(ud1,para.ud1,P2,T,E,number_of_elements);
-% draw_u(ud2,para.ud2,P2,T,E,number_of_elements);
+% draw_u(ud1,para.ud1,P2,T,E,number_of_elements,'ud1');
+% draw_u(ud2,para.ud2,P2,T,E,number_of_elements,'ud2');
 % draw_p(pd,para.pd,P2,T,number_of_elements)
 
-fid=fopen('result.txt','at');
-fprintf(fid, '%.2e\t %.2e\t %.2e\t %.2e\t \n', e_us, e_ps, e_ud, e_pd);
-fclose(fid);
+% fid=fopen('result.txt','at');
+% fprintf(fid, '%.2e\t %.2e\t %.2e\t %.2e\t \n', e_us, e_ps, e_ud, e_pd);
+% fclose(fid);
 
 

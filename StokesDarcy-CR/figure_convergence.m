@@ -105,7 +105,7 @@ e_us11 = log(e_us11); plot(N,e_us11,'o-','LineWidth',2);
 e_us12 = log(e_us12); plot(N,e_us12,'o-','LineWidth',2); 
 e_us14 = log(e_us14); plot(N,e_us14,'o-','LineWidth',2); 
 e_us16 = log(e_us16); plot(N,e_us16,'o-','LineWidth',2); 
-title('$\mu = 1$','Interpreter','latex'); box on;
+title('$\mu = 1$','Interpreter','latex','FontSize',14); box on;
 
 a2 = nexttile; hold on;
 plot(N,-N,'--','LineWidth',2)   %2nd order slope
@@ -113,7 +113,7 @@ e_us21 = log(e_us21); plot(N,e_us21,'o-','LineWidth',2);
 e_us22 = log(e_us22); plot(N,e_us22,'o-','LineWidth',2); 
 e_us24 = log(e_us24); plot(N,e_us24,'o-','LineWidth',2); 
 e_us26 = log(e_us26); plot(N,e_us26,'o-','LineWidth',2); 
-title('$\mu = 1e-2$','Interpreter','latex'); box on;
+title('$\mu = 1e-2$','Interpreter','latex','FontSize',14); box on;
 
 a3 = nexttile; hold on;
 plot(N,-N,'--','LineWidth',2)   %2nd order slope
@@ -121,7 +121,7 @@ e_us41 = log(e_us41); plot(N,e_us41,'o-','LineWidth',2);
 e_us42 = log(e_us42); plot(N,e_us42,'o-','LineWidth',2); 
 e_us44 = log(e_us44); plot(N,e_us44,'o-','LineWidth',2); 
 e_us46 = log(e_us46); plot(N,e_us46,'o-','LineWidth',2); 
-title('$\mu = 1e-4$','Interpreter','latex'); box on;
+title('$\mu = 1e-4$','Interpreter','latex','FontSize',14); box on;
 
 a4 = nexttile; hold on;
 plot(N,-N,'--','LineWidth',2)   %2nd order slope
@@ -129,13 +129,13 @@ e_us61 = log(e_us61); plot(N,e_us61,'o-','LineWidth',2);
 e_us62 = log(e_us62); plot(N,e_us62,'o-','LineWidth',2); 
 e_us64 = log(e_us64); plot(N,e_us64,'o-','LineWidth',2); 
 e_us66 = log(e_us66); plot(N,e_us66,'o-','LineWidth',2); 
-title('$\mu = 1e-6$','Interpreter','latex'); box on;
+title('$\mu = 1e-6$','Interpreter','latex','FontSize',14); box on;
 
 linkaxes([a1 a2 a3 a4],'xy')
-legend('1-nd order slope','$k = 1$','$k = 1e-2$','$k = 1e-4$', '$k = 1e-6$',...
-    'Location','bestoutside','Orientation','vertical', 'Interpreter','latex')
+legend('1-st order slope','$k = 1$','$k = 1e-2$','$k = 1e-4$', '$k = 1e-6$',...
+    'Location','bestoutside','Orientation','vertical', 'Interpreter','latex','FontSize',13)
 xlabel(t,'Mesh Size')
-ylabel(t,'$\| \mathbf{u}_S - \mathbf{u}_{S,h} \|_{1}$', 'Interpreter','latex')
+ylabel(t,'$\| \mathbf{u}_S - \mathbf{u}_{S,h} \|_{1}$', 'Interpreter','latex','FontSize',14)
 
 %% ps 
 figure('units','normalized','position',[0.15,0.3,0.75,0.3]);
@@ -148,7 +148,7 @@ e_ps12 = log(e_ps12); plot(N,e_ps12,'o-','LineWidth',2);
 e_ps14 = log(e_ps14); plot(N,e_ps14,'o-','LineWidth',2); 
 e_ps16 = log(e_ps16); plot(N,e_ps16,'o-','LineWidth',2); 
 %legend('1-nd order slope', 'K = 1e-0','K = 1e-2','K = 1e-4', 'K = 1e-6');
-title('$\mu = 1$','Interpreter','latex'); box on;
+title('$\mu = 1$','Interpreter','latex','FontSize',14); box on;
 
 a2 = nexttile; hold on;
 plot(N,-N,'--','LineWidth',2)   %2nd order slope
@@ -157,7 +157,7 @@ e_ps22 = log(e_ps22); plot(N,e_ps22,'o-','LineWidth',2);
 e_ps24 = log(e_ps24); plot(N,e_ps24,'o-','LineWidth',2); 
 e_ps26 = log(e_ps26); plot(N,e_ps26,'o-','LineWidth',2); 
 %legend('1-nd order slope', 'K = 1e-0','K = 1e-2','K = 1e-4', 'K = 1e-6');
-title('$\mu = 1e-2$','Interpreter','latex'); box on;
+title('$\mu = 1e-2$','Interpreter','latex','FontSize',14); box on;
 
 a3 = nexttile; hold on;
 plot(N,-N,'--','LineWidth',2)   %2nd order slope
@@ -165,7 +165,7 @@ e_ps41 = log(e_ps41); plot(N,e_ps41,'o-','LineWidth',2);
 e_ps42 = log(e_ps42); plot(N,e_ps42,'o-','LineWidth',2); 
 e_ps44 = log(e_ps44); plot(N,e_ps44,'o-','LineWidth',2); 
 e_ps46 = log(e_ps46); plot(N,e_ps46,'o-','LineWidth',2); 
-title('$\mu = 1e-4$','Interpreter','latex'); box on;
+title('$\mu = 1e-4$','Interpreter','latex','FontSize',14); box on;
 
 a4 = nexttile; hold on;
 plot(N,-N,'--','LineWidth',2)   %2nd order slope
@@ -173,13 +173,13 @@ e_ps61 = log(e_ps61); plot(N,e_ps61,'o-','LineWidth',2);
 e_ps62 = log(e_ps62); plot(N,e_ps62,'o-','LineWidth',2); 
 e_ps64 = log(e_ps64); plot(N,e_ps64,'o-','LineWidth',2); 
 e_ps66 = log(e_ps66); plot(N,e_ps66,'o-','LineWidth',2); 
-title('$\mu = 1e-6$','Interpreter','latex'); box on;
+title('$\mu = 1e-6$','Interpreter','latex','FontSize',14); box on;
 
 linkaxes([a1 a2 a3 a4],'xy')
-legend('1-nd order slope','$k = 1$','$k = 1e-2$','$k = 1e-4$', '$k = 1e-6$',...
-    'Location','bestoutside','Orientation','vertical', 'Interpreter','latex')
+legend('1-st order slope','$k = 1$','$k = 1e-2$','$k = 1e-4$', '$k = 1e-6$',...
+    'Location','bestoutside','Orientation','vertical', 'Interpreter','latex','FontSize',13)
 xlabel(t,'Mesh size')
-ylabel(t,'$\| p_S - p_{S,h} \|_{0}$', 'Interpreter','latex')
+ylabel(t,'$\| p_S - p_{S,h} \|_{0}$', 'Interpreter','latex','FontSize',14)
 
 %% ud
 figure('units','normalized','position',[0.15,0.3,0.75,0.3]);
@@ -191,7 +191,7 @@ e_ud11 = log(e_ud11); plot(N,e_ud11,'o-','LineWidth',2);
 e_ud12 = log(e_ud12); plot(N,e_ud12,'o-','LineWidth',2); 
 e_ud14 = log(e_ud14); plot(N,e_ud14,'o-','LineWidth',2); 
 e_ud16 = log(e_ud16); plot(N,e_ud16,'o-','LineWidth',2); 
-title('$\mu = 1$','Interpreter','latex'); box on;
+title('$\mu = 1$','Interpreter','latex','FontSize',14); box on;
 
 a2 = nexttile; hold on;
 plot(N,-N,'--','LineWidth',2)   %2nd order slope
@@ -199,7 +199,7 @@ e_ud21 = log(e_ud21); plot(N,e_ud21,'o-','LineWidth',2);
 e_ud22 = log(e_ud22); plot(N,e_ud22,'o-','LineWidth',2); 
 e_ud24 = log(e_ud24); plot(N,e_ud24,'o-','LineWidth',2); 
 e_ud26 = log(e_ud26); plot(N,e_ud26,'o-','LineWidth',2); 
-title('$\mu = 1e-2$','Interpreter','latex'); box on;
+title('$\mu = 1e-2$','Interpreter','latex','FontSize',14); box on;
 
 a3 = nexttile; hold on;
 plot(N,-N,'--','LineWidth',2)   %2nd order slope
@@ -207,7 +207,7 @@ e_ud41 = log(e_ud41); plot(N,e_ud41,'o-','LineWidth',2);
 e_ud42 = log(e_ud42); plot(N,e_ud42,'o-','LineWidth',2); 
 e_ud44 = log(e_ud44); plot(N,e_ud44,'o-','LineWidth',2); 
 e_ud46 = log(e_ud46); plot(N,e_ud46,'o-','LineWidth',2); 
-title('$\mu = 1e-4$','Interpreter','latex'); box on;
+title('$\mu = 1e-4$','Interpreter','latex','FontSize',14); box on;
 
 a4 = nexttile; hold on;
 plot(N,-N,'--','LineWidth',2)   %2nd order slope
@@ -215,13 +215,13 @@ e_ud61 = log(e_ud61); plot(N,e_ud61,'o-','LineWidth',2);
 e_ud62 = log(e_ud62); plot(N,e_ud62,'o-','LineWidth',2); 
 e_ud64 = log(e_ud64); plot(N,e_ud64,'o-','LineWidth',2); 
 e_ud66 = log(e_ud66); plot(N,e_ud66,'o-','LineWidth',2); 
-title('$\mu = 1e-6$','Interpreter','latex'); box on;
+title('$\mu = 1e-6$','Interpreter','latex','FontSize',14); box on;
 
 linkaxes([a1 a2 a3 a4],'xy')
-legend('1-nd order slope','$k = 1$','$k = 1e-2$','$k = 1e-4$', '$k = 1e-6$',...
-    'Location','bestoutside','Orientation','vertical', 'Interpreter','latex')
+legend('1-st order slope','$k = 1$','$k = 1e-2$','$k = 1e-4$', '$k = 1e-6$',...
+    'Location','bestoutside','Orientation','vertical', 'Interpreter','latex','FontSize',13)
 xlabel(t,'Mesh Size')
-ylabel(t,'$\| \mathbf{u}_D - \mathbf{u}_{D,h} \|_{0}$', 'Interpreter','latex')
+ylabel(t,'$\| \mathbf{u}_D - \mathbf{u}_{D,h} \|_{0}$', 'Interpreter','latex','FontSize',14)
 
 
 %% pd 
@@ -235,7 +235,7 @@ e_pd12 = log(e_pd12); plot(N,e_pd12,'o-','LineWidth',2);
 e_pd14 = log(e_pd14); plot(N,e_pd14,'o-','LineWidth',2); 
 e_pd16 = log(e_pd16); plot(N,e_pd16,'o-','LineWidth',2); 
 box on;
-title('$\mu = 1$','Interpreter','latex');
+title('$\mu = 1$','Interpreter','latex','FontSize',14);
 
 a2 = nexttile; hold on;
 plot(N,-N,'--','LineWidth',2)   %2nd order slope
@@ -244,7 +244,7 @@ e_pd22 = log(e_pd22); plot(N,e_pd22,'o-','LineWidth',2);
 e_pd24 = log(e_pd24); plot(N,e_pd24,'o-','LineWidth',2); 
 e_pd26 = log(e_pd26); plot(N,e_pd26,'o-','LineWidth',2); 
 box on;
-title('$\mu = 1e-2$','Interpreter','latex');
+title('$\mu = 1e-2$','Interpreter','latex','FontSize',14);
 
 a3 = nexttile; hold on;
 plot(N,-N,'--','LineWidth',2)   %1nd order slope
@@ -253,7 +253,7 @@ e_pd42 = log(e_pd42); plot(N,e_pd42,'o-','LineWidth',2);
 e_pd44 = log(e_pd44); plot(N,e_pd44,'o-','LineWidth',2); 
 e_pd46 = log(e_pd46); plot(N,e_pd46,'o-','LineWidth',2); 
 box on;
-title('$\mu = 1e-4$','Interpreter','latex');
+title('$\mu = 1e-4$','Interpreter','latex','FontSize',14);
 
 a4 = nexttile; hold on; 
 plot(N,-N,'--','LineWidth',2)   %1nd order slope
@@ -262,10 +262,10 @@ e_pd62 = log(e_pd62); plot(N,e_pd62,'o-','LineWidth',2);
 e_pd64 = log(e_pd64); plot(N,e_pd64,'o-','LineWidth',2); 
 e_pd66 = log(e_pd66); plot(N,e_pd66,'o-','LineWidth',2); 
 box on; 
-title('$\mu = 1e-6$','Interpreter','latex');
+title('$\mu = 1e-6$','Interpreter','latex','FontSize',14);
 
 linkaxes([a1 a2 a3 a4],'xy')
-legend('1-nd order slope','$k = 1$','$k = 1e-2$','$k = 1e-4$', '$k = 1e-6$',...
-    'Location','bestoutside','Orientation','vertical', 'Interpreter','latex')
+legend('1-st order slope','$k = 1$','$k = 1e-2$','$k = 1e-4$', '$k = 1e-6$',...
+    'Location','bestoutside','Orientation','vertical', 'Interpreter','latex','FontSize',13)
 xlabel(t,'Mesh Size')
-ylabel(t,'$\| p_D - p_{D,h} \|_{0}$', 'Interpreter','latex')
+ylabel(t,'$\| p_D - p_{D,h} \|_{0}$', 'Interpreter','latex','FontSize',14)
