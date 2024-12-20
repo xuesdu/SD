@@ -7,6 +7,8 @@ para.int_pd = int_pd();
 para.us1 = @fun_us1;
 para.us2 = @fun_us2;
 para.ps = @fun_ps;
+para.us1_vec = @fun_us1_vec;
+para.us2_vec = @fun_us2_vec;
 
 para.us1_x = @fun_us1_x;
 para.us1_y = @fun_us1_y;

@@ -8,7 +8,7 @@ for n = 1:number_of_elements
     elseif Omega == 'd'
         vertices = P(:,T(:,n+number_of_elements));
     end
-    neig = neighbors(:,n);  % 当前单元的相邻单元
+    neig = neighbors(:,n);  % the neighborhood of current element
     for k = 1:3  
         if neig(k) ~= -1    % interior edge
             if k == 1
@@ -21,7 +21,7 @@ for n = 1:number_of_elements
                 end_point_1 = vertices(:,1);
                 end_point_2 = vertices(:,2);
             end
-            if end_point_1(1) == xbar && end_point_2(1) == xbar  % Stokes区域界面上不加jump
+            if end_point_1(1) == xbar && end_point_2(1) == xbar  % on jump on interface
                 continue;
             else
                 for alpha = 1:number_of_local_basis_trial

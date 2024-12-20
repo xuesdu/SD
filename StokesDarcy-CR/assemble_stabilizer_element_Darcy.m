@@ -9,9 +9,9 @@ for n = 1:number_of_elements
     elseif Omega == 'd'
         vertices = P(:,T(:,n+number_of_elements));
     end
-    neig = neighbors_Stokes(:,n);  % 当前单元的相邻单元
+    neig = neighbors_Stokes(:,n);  
     for k = 1:3
-        if neig(k) ~= -1    % 这条边有相邻单元,即内部边
+        if neig(k) ~= -1    % interior edge
             if k == 1
                 end_point_1 = vertices(:,2);
                 end_point_2 = vertices(:,3);

@@ -18,7 +18,6 @@ for n = 1:number_of_elements
             elseif Omega == 'd'
                 vertices_neig = P(:,T(:,neig_index+number_of_elements));
             end
-
             if k == 1
                 end_point_1 = vertices(:,2);
                 end_point_2 = vertices(:,3);

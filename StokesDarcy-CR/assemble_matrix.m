@@ -2,7 +2,7 @@ function A = assemble_matrix(Omega,fun,dof_trial,dof_test,ne,P,T,Eb_test,Eb_tria
 
 A = sparse(dof_trial,dof_test);
 
-for n = 1:ne % 遍历所有单元
+for n = 1:ne 
     if Omega == 's'
         vertices = P(:,T(:,n));
     elseif Omega == 'd'

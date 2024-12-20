@@ -65,7 +65,7 @@ elseif Omega == 'd' % 只与Biot区域有关
             end
         end
     end
-elseif Omega == 'sd'  % 与Stokes和Biot都有关
+elseif Omega == 'sd'  % 与Stokes和Darcy都有关
     for n = 1:size(Inter.Tp,2)    % 遍历单元
         ele_f = Inter.Tf(1,n);
         ele_p = Inter.Tp(1,n);        % Omega_p 从头开始编号
