@@ -37,7 +37,7 @@ for i = 1:Ny
     %         Gauss_weights_ref_1D,Gauss_nodes_ref_1D,vertices_Stokes,...
     %         200,0,0,0,0,201,alpha,0,0,0);
     % end
-    Proj(T(1,element_Stokes), T(3,element_Stokes)) = 1; 
+    Proj(T(1,element_Stokes), dof_ul - Ny) = 1; 
     Proj(dof_Stokes+edge_Darcy,T(3,element_Stokes)) = -1;
     Proj(dof_Stokes+edge_Darcy,2*dof_ul+edge_Stokes-Ny) = 1;
 end

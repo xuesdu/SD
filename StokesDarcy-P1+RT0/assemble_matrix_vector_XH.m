@@ -6,7 +6,7 @@ global number_of_elements
 global dof_Stokes dof_Darcy
 global P T E alpha_T gamma_tilde
 
-BC = 'I';
+BC = 'IV';
 beta_t = alpha_BJS*nu^(1/2)*K^(-1/2);
 
 hx = (xr-xl)/(2*Nx); hy = (yt-yb)/Ny;
@@ -103,7 +103,7 @@ Af_LR = [I2';Os1];
 %       Af_LR'  Af_RR + gamma_tilde*I3];
 % ==== add boundary integral terms =====
 Aus = [Af_LL           AB+Af_LR;
-      AB'+Af_LR'  Af_RR + gamma_tilde*I3];
+      AB'+Af_LR'  Af_RR + gamma_tilde/hx*I3];
 Gf_L = [A4;A5]; Gf_R = A8+A9; Bs = [Gf_L; Gf_R];
 As = [Aus Bs;
      Bs' Os2];

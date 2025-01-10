@@ -14,9 +14,9 @@ basis_type_trial_p = 200;basis_type_test_p = 200;
 
 e_us = []; e_ps = []; e_ud = []; e_pd = [];
 pp = 0;
-for ch = 2:6
+for ch = 1:4
     pp = pp+1;
-    prog = select(1,ch);
+    prog = select(2,ch);
     if prog.end == 1
         return
     end
@@ -29,7 +29,7 @@ for ch = 2:6
         fprintf('nu = %.0e, K = %.0e \n',nu, K);
     end
     %%% ========= penalizling parameter =================
-    gamma_s = nu;  gamma_d = K^(-1);  gamma_I = 100*gamma_d;
+    gamma_s = nu;  gamma_d = K^(-1);  
 
     xl = para.box.left;    xr = para.box.right;   xbar = para.box.interface;
     yb = para.box.bottom;  yt = para.box.top;
@@ -116,7 +116,7 @@ for ch = 2:6
     % Sta_s = Sn + St;
     % =========== the jump term on the interface(on Stokes domain) ========
     Ss_I1 = assemble_matrix_interface('s',para.one,dof_us,dof_us,P,T,Inter,Eb_test_u,Eb_trial_u,Gauss_weights_ref_1D,Gauss_nodes_ref_1D,number_of_local_basis_trial_u,number_of_local_basis_test_u,basis_type_trial_u,0,0,basis_type_test_u,0,0);
-    Ss_I1 = gamma_I*Ss_I1/hk;
+    Ss_I1 = gamma_d*Ss_I1/hk;
     Aus = [2*A1+A2+Ss_I1 A3; A3' 2*A2+A1+I1];
     % Aus = [2*A1+A2    A3; A3'   2*A2+A1+I1];
     Aus = Aus + Sta_s;
@@ -151,7 +151,7 @@ for ch = 2:6
     Sta = [S1 S2; S2' S3];
     % =========== the jump term on the interface(on Darcy domain) ========
     Sd_I1 = assemble_matrix_interface('d',para.one,dof_ud,dof_ud,P,T,Inter,Eb_test_u,Eb_trial_u,Gauss_weights_ref_1D,Gauss_nodes_ref_1D,number_of_local_basis_trial_u,number_of_local_basis_test_u,basis_type_trial_u,0,0,basis_type_test_u,0,0);
-    Sd_I1 = gamma_I*Sd_I1/hk;
+    Sd_I1 = gamma_d*Sd_I1/hk;
     Aud = [A1+Sd_I1 sparse(dof_ud,dof_ud);sparse(dof_ud,dof_ud) A1] + Sta;
     
     % Aud = [A1 sparse(dof_ud,dof_ud);sparse(dof_ud,dof_ud) A1] + Sta;
@@ -160,7 +160,7 @@ for ch = 2:6
     clear S11 SS11 S12 SS12 S22 SS22 S1 S2 S3 A1 B1 B2;
     % =========== the jump term on the interface ========
     S_I1 = assemble_matrix_interface('sd',para.one,dof_us,dof_ud,P,T,Inter,Eb_test_u,Eb_trial_u,Gauss_weights_ref_1D,Gauss_nodes_ref_1D,number_of_local_basis_trial_u,number_of_local_basis_test_u,basis_type_trial_u,0,0,basis_type_test_u,0,0);
-    S_I1 = gamma_I*S_I1/hk;
+    S_I1 = gamma_d*S_I1/hk;
     %%% assemble right hand vector
     % Stokes domain: (f,Pi^R v)
     bs1 = assemble_vector_Projection('s',para.fs1,para.fs2,para,number_of_elements,P,T,dof_us,Eb_test_u,Gauss_weights_ref_2D,Gauss_nodes_ref_2D,number_of_local_basis_test_u,basis_type_test_u,1,0,0);

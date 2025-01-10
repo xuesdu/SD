@@ -4,11 +4,11 @@ function A = assemble_matrix_interface(Omega,fun,dof_trial,dof_test,P,T,Inter,Tb
 
 A = sparse(dof_trial,dof_test);
 ele = Inter.Tf(1,:);
-if Omega == 's'   % 只与Stokes区域有关
-    for n = 1:size(ele,2)    % 遍历单元
-        ele_index = ele(n);  % 界面边所在的单元
+if Omega == 's'   % only related to the Stokes domain
+    for n = 1:size(ele,2)    % loop elements
+        ele_index = ele(n);  % the interface element
         vertices = P(:,T(:,ele_index));
-        end_point_1 = vertices(:,3);   % 界面的两个端点
+        end_point_1 = vertices(:,3);   % two points of interface
         end_point_2 = vertices(:,1);
         if basis_type_trial == 100
             for alpha = 1:number_of_local_basis_trial
@@ -34,12 +34,12 @@ if Omega == 's'   % 只与Stokes区域有关
             end
         end
     end
-elseif Omega == 'd' % 只与Biot区域有关
-    for n = 1:size(Inter.Tp,2)    % 遍历单元
-        ele_local = Inter.Tp(1,n);  % Omega_p 从头开始编号
-        ele_global = Inter.Tp(2,n);  % 单元的整体编号
+elseif Omega == 'd' % only related to Darcy domain
+    for n = 1:size(Inter.Tp,2)    
+        ele_local = Inter.Tp(1,n);  % Omega_d the index starts from 1
+        ele_global = Inter.Tp(2,n);  % the global index 
         vertices = P(:,T(:,ele_global));
-        end_point_1 = vertices(:,3);   % 界面的两个端点
+        end_point_1 = vertices(:,3);   
         end_point_2 = vertices(:,1);
         if basis_type_trial == 100
             for alpha = 1:number_of_local_basis_trial
@@ -65,15 +65,15 @@ elseif Omega == 'd' % 只与Biot区域有关
             end
         end
     end
-elseif Omega == 'sd'  % 与Stokes和Darcy都有关
-    for n = 1:size(Inter.Tp,2)    % 遍历单元
+elseif Omega == 'sd'  % related to both Stokes and Darcy
+    for n = 1:size(Inter.Tp,2)   
         ele_f = Inter.Tf(1,n);
-        ele_p = Inter.Tp(1,n);        % Omega_p 从头开始编号
+        ele_p = Inter.Tp(1,n);        % Omega_p starts from 1
         ele_index_f = Inter.Tf(2,n);
-        ele_index_p = Inter.Tp(2,n);  % 单元的整体编号
+        ele_index_p = Inter.Tp(2,n);  % global index
         vertices_f = P(:,T(:,ele_index_f));
         vertices_p = P(:,T(:,ele_index_p));
-        end_point_1 = vertices_f(:,1);   % 界面的两个端点
+        end_point_1 = vertices_f(:,1);  
         end_point_2 = vertices_f(:,3);
         for alpha = 1:number_of_local_basis_trial
             for beta = 1:number_of_local_basis_test

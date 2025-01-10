@@ -8,14 +8,15 @@ global number_of_elements number_of_edges number_of_nodes
 global number_of_nodes_Stokes number_of_edges_Stokes dof_Stokes dof_Darcy
 global P T E Inter  nu K alpha_BJS
 global alpha_T gamma_tilde
-alpha_T = 2;  % stabilizer coefficient
-gamma_tilde = 1e6;
+alpha_T = 5;  % stabilizer coefficient
+gamma_tilde = 1e0;
 Gpn = 9;       % Gpn = 4 not pressure robust
 
-MC = 'strongly'; %'Weakly';
+MC = 'Weakly'; 
+% MC = 'Strongly';
 e_us = [];  e_ps = [];  e_ud = [];  e_pd = []; cond_number = 0; cond_number_2 = 0;  
 temp = 0;
-for ch = 2:2
+for ch = 0:4
     temp = temp+1;
     prog = select(1,ch);
     if prog.end == 1
@@ -100,7 +101,7 @@ for ch = 2:2
     diag_invMpd = (1/(0.5*hx*hy))*ones(N_pd,1);
 
     % set parameters that can be tuned
-    weight_s = 100; omega_s = weight_s*nu;  
+    weight_s = 10; omega_s = weight_s*nu;  
     weight_d = 1; omega_d = weight_d*K^(-1);
 
     %%% F1
@@ -108,11 +109,14 @@ for ch = 2:2
     Pp = [(1/omega_s)*Mps, sparse(N_ps, N_pd); sparse(N_pd, N_ps), (1/omega_d)*Mpd];
     PA = [Pu, sparse(Nu, Np); sparse(Np, Nu), Pp]; % block diagonal
     % % PA = [Pu, Aup; sparse(Np, Nu), Pp]; % upper triangle
+
+    % eig_Pu = eigs(Pu, 6, 'smallestabs');
+    % ans = Pu - Pu';
     %%% ================= Verify inf-sup condition ==================
-    S = Apu*(Pu)^(-1)*Aup;
-    I = eye(size(S));
-    beta_inf = eigs(S+(1e-12)*I, Pp, 6, 'smallestabs', 'IsSymmetricDefinite', 1);
-    fprintf('beta_inf = %.2e, \n', beta_inf);
+    % S = Apu*(Pu)^(-1)*Aup;
+    % I = eye(size(S));
+    % beta_inf = eigs(S+(1e-12)*I, Pp, 6, 'smallestabs', 'IsSymmetricDefinite', 1);
+    % fprintf('beta_inf = %.2e, \n', beta_inf);
 % % 
 % % 
 % % % %     %%% F2 
@@ -148,13 +152,12 @@ for ch = 2:2
     solution_0 = u_reorder(put_back_order);
 % 
 %     %%% ========== condition number ===================
-% %     A_reorder = (A_reorder+A_reorder')/2;
-% %     PA = (PA+PA')/2;
-% %     eig_max = eigs(A_reorder + (1e-12)*PA, PA, 6, 'largestabs', 'IsSymmetricDefinite', 1);
-% %     eig_min = eigs(A_reorder + (1e-12)*PA, PA, 6, 'smallestabs', 'IsSymmetricDefinite', 1);
-% %     cond_number = abs(eig_max(1))/abs(eig_min(1));
-% %     cond_number_2 = abs(eig_max(1))/abs(eig_min(2));
-% 
+    A_reorder = (A_reorder+A_reorder')/2;
+    PA = (PA+PA')/2;
+    eig_max = eigs(A_reorder + (1e-12)*PA, PA, 6, 'largestabs', 'IsSymmetricDefinite', 1);
+    eig_min = eigs(A_reorder + (1e-12)*PA, PA, 6, 'smallestabs', 'IsSymmetricDefinite', 1);
+    cond_number = abs(eig_max(1))/abs(eig_min(1));
+    cond_number_2 = abs(eig_max(1))/abs(eig_min(2));
  
     solution_0 = Proj*solution_0;
     solution = solution_0 + solution_g;
@@ -167,7 +170,7 @@ for ch = 2:2
     ud = solution(dof_Stokes+1:dof_Stokes+dof_ud);
     pd = solution(dof_Stokes+dof_ud+1:dof_Stokes+dof_Darcy);
     
-    fprintf("cond_number = %.2f, cond_number_2 = %.2f\n",cond_number,cond_number_2);
+    fprintf("cond_number = %.2e, cond_number_2 = %.2f\n",cond_number,cond_number_2);
     % L2 模
     Tb_trial_ul = T(:,1:number_of_elements/2); Eb_trial_uR = E(:,1:number_of_elements/2);
     for i = 1:number_of_elements/2
@@ -215,7 +218,7 @@ for ch = 2:2
     e_pd(end+1) = error_L2_pd;
     
 end
-draw(ul1,ul2,para,hx,hy);
+% draw(ul1,ul2,para,hx,hy);
 % draw_p(ps,pd,para,Nx,Ny);
 % figure_convergence
 
