@@ -1,4 +1,4 @@
-function [A0, b0, A, b, Proj, solution_g] = assemble_matrix_vector_XH(para,MC,Nx,Ny,dof_ul,dof_uR,dof_ps,...
+function [A0, b0, A, b, Proj, solution_g] = assemble_matrix_vector_XH(para,BC,MC,Nx,Ny,dof_ul,dof_uR,dof_ps,...
     dof_ud,dof_pd,Gauss_weights_ref_2D,Gauss_nodes_ref_2D,Gauss_weights_ref_1D,Gauss_nodes_ref_1D)
 
 global xl xbar xr yb yt nu K alpha_BJS
@@ -6,7 +6,6 @@ global number_of_elements
 global dof_Stokes dof_Darcy
 global P T E alpha_T gamma_tilde
 
-BC = 'IV';
 beta_t = alpha_BJS*nu^(1/2)*K^(-1/2);
 
 hx = (xr-xl)/(2*Nx); hy = (yt-yb)/Ny;

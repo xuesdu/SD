@@ -1,4 +1,4 @@
-function [u, iter, residual] = Prec_FGMRES(A, f, u, M_l, M_r, maxit, restart, tol, print_level)
+function [u, iter, residual, H] = Prec_FGMRES(A, f, u, M_l, M_r, maxit, restart, tol, print_level)
 % Preconditioned Flexible General Minimal Residual Method (Left and Right Preconditioner)
 %
 % BRIEF: 
