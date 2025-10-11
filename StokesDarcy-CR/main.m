@@ -5,7 +5,7 @@ clear;
 global xl xr yb yt xbar nu K alpha_BJS
 Gpn = 9;    % Gauss point number
 % I: no kernel; II: a kernel; III: near kernel on Darcy; IV: near kernel on Stokes;
-BC = 'II';
+BC = 'I';
 % MC = 'Strongly';
 MC = 'Weakly';  % weakly imposing the interface condition
 
@@ -14,9 +14,9 @@ basis_type_trial_p = 200;basis_type_test_p = 200;
 
 e_us = []; e_ps = []; e_ud = []; e_pd = [];
 pp = 0;
-for ch = 1:4
+for ch = 0:4
     pp = pp+1;
-    prog = select(2,ch);
+    prog = select(1,ch);
     if prog.end == 1
         return
     end
@@ -29,7 +29,7 @@ for ch = 1:4
         fprintf('nu = %.0e, K = %.0e \n',nu, K);
     end
     %%% ========= penalizling parameter =================
-    gamma_s = nu;  gamma_d = K^(-1);  
+    gamma_s = nu;  gamma_d = K^(-1);
 
     xl = para.box.left;    xr = para.box.right;   xbar = para.box.interface;
     yb = para.box.bottom;  yt = para.box.top;
@@ -117,8 +117,8 @@ for ch = 1:4
     % =========== the jump term on the interface(on Stokes domain) ========
     Ss_I1 = assemble_matrix_interface('s',para.one,dof_us,dof_us,P,T,Inter,Eb_test_u,Eb_trial_u,Gauss_weights_ref_1D,Gauss_nodes_ref_1D,number_of_local_basis_trial_u,number_of_local_basis_test_u,basis_type_trial_u,0,0,basis_type_test_u,0,0);
     Ss_I1 = gamma_d*Ss_I1/hk;
-    Aus = [2*A1+A2+Ss_I1 A3; A3' 2*A2+A1+I1];
-    % Aus = [2*A1+A2    A3; A3'   2*A2+A1+I1];
+    % Aus = [2*A1+A2+Ss_I1 A3; A3' 2*A2+A1+I1];
+    Aus = [2*A1+A2    A3; A3'   2*A2+A1+I1];
     Aus = Aus + Sta_s;
     Bs = [B1;B2];  Aps = sparse(dof_ps,dof_ps);
     As = [Aus Bs; Bs' Aps];
@@ -150,17 +150,17 @@ for ch = 1:4
     S3 = gamma_d*(S22-SS22)/hk;
     Sta = [S1 S2; S2' S3];
     % =========== the jump term on the interface(on Darcy domain) ========
-    Sd_I1 = assemble_matrix_interface('d',para.one,dof_ud,dof_ud,P,T,Inter,Eb_test_u,Eb_trial_u,Gauss_weights_ref_1D,Gauss_nodes_ref_1D,number_of_local_basis_trial_u,number_of_local_basis_test_u,basis_type_trial_u,0,0,basis_type_test_u,0,0);
-    Sd_I1 = gamma_d*Sd_I1/hk;
-    Aud = [A1+Sd_I1 sparse(dof_ud,dof_ud);sparse(dof_ud,dof_ud) A1] + Sta;
-    
-    % Aud = [A1 sparse(dof_ud,dof_ud);sparse(dof_ud,dof_ud) A1] + Sta;
+    % Sd_I1 = assemble_matrix_interface('d',para.one,dof_ud,dof_ud,P,T,Inter,Eb_test_u,Eb_trial_u,Gauss_weights_ref_1D,Gauss_nodes_ref_1D,number_of_local_basis_trial_u,number_of_local_basis_test_u,basis_type_trial_u,0,0,basis_type_test_u,0,0);
+    % Sd_I1 = gamma_d*Sd_I1/hk;
+    % Aud = [A1+Sd_I1 sparse(dof_ud,dof_ud);sparse(dof_ud,dof_ud) A1] + Sta;
+
+    Aud = [A1 sparse(dof_ud,dof_ud);sparse(dof_ud,dof_ud) A1] + Sta;
     Bd = [B1;B2]; Apd = sparse(dof_pd,dof_pd);
     Ad = [Aud Bd; Bd' Apd];
     clear S11 SS11 S12 SS12 S22 SS22 S1 S2 S3 A1 B1 B2;
     % =========== the jump term on the interface ========
-    S_I1 = assemble_matrix_interface('sd',para.one,dof_us,dof_ud,P,T,Inter,Eb_test_u,Eb_trial_u,Gauss_weights_ref_1D,Gauss_nodes_ref_1D,number_of_local_basis_trial_u,number_of_local_basis_test_u,basis_type_trial_u,0,0,basis_type_test_u,0,0);
-    S_I1 = gamma_d*S_I1/hk;
+    % S_I1 = assemble_matrix_interface('sd',para.one,dof_us,dof_ud,P,T,Inter,Eb_test_u,Eb_trial_u,Gauss_weights_ref_1D,Gauss_nodes_ref_1D,number_of_local_basis_trial_u,number_of_local_basis_test_u,basis_type_trial_u,0,0,basis_type_test_u,0,0);
+    % S_I1 = gamma_d*S_I1/hk;
     %%% assemble right hand vector
     % Stokes domain: (f,Pi^R v)
     bs1 = assemble_vector_Projection('s',para.fs1,para.fs2,para,number_of_elements,P,T,dof_us,Eb_test_u,Gauss_weights_ref_2D,Gauss_nodes_ref_2D,number_of_local_basis_test_u,basis_type_test_u,1,0,0);
@@ -184,7 +184,7 @@ for ch = 1:4
     bd = [bd1;bd2;bd3];
 
     Asd = sparse(length(As),length(Ad));
-    Asd(1:dof_us,1:dof_ud) = - S_I1;
+    % Asd(1:dof_us,1:dof_ud) = - S_I1;
     A = [ As     Asd;
         Asd'   Ad];
     %%% treat boundary condition
@@ -227,8 +227,8 @@ for ch = 1:4
 
     %%% Treat pressure condition
     % F1: integral mean value
-    A(dof_Stokes,:) = 0;  A(dof_Stokes,2*dof_us+1:dof_Stokes) = hx^2/2; b(dof_Stokes) = para.int_ps;
-    A(end,:) = 0; A(end,end-dof_pd+1:end) = hx^2/2; b(end) = para.int_pd;
+    % A(dof_Stokes,:) = 0;  A(dof_Stokes,2*dof_us+1:dof_Stokes) = hx^2/2; b(dof_Stokes) = para.int_ps;
+    % A(end,:) = 0; A(end,end-dof_pd+1:end) = hx^2/2; b(end) = para.int_pd;
     % F2: fix a point value
     %exact_ps = Gauss_quad_exact_pressure(para.ps,Gauss_weights_ref_2D,Gauss_nodes_ref_2D,[xbar xbar-hx xbar; yt yt yt-hy])/(hx^2/2);
     %exact_pd = Gauss_quad_exact_pressure(para.pd,Gauss_weights_ref_2D,Gauss_nodes_ref_2D,[xr xr-hx xr; yt yt yt-hy])/(hx^2/2);
@@ -238,104 +238,165 @@ for ch = 1:4
     %A(end, :) = 0;  A(:, end) = 0;  A(end, end) = 1; b(end) = exact_pd;
 
     % direct solve
-    u0 = A\b; iter = 0; cond_number = 0;
+    % u0 = A\b; iter = 0; cond_number = 0;
 
-    %     %===============================================
-    %     % % Block diagnoal preconditioner
-    %     maxit = 1000;  restart = 1000; tol = 1e-6;
-    %     % reordering
-    %     if strcmp(MC,'Weakly')
-    %         N_us = 2*dof_us;
-    %         N_ps = dof_Stokes - N_us;
-    %         N_ud = dof_Darcy_new - dof_pd - Ny;
-    %         N_pd = dof_pd;
-    %         Nu = N_us + N_ud;
-    %         Np = N_ps + N_pd;
-    %     else
-    %         N_us = 2*dof_us;
-    %         N_ps = dof_Stokes - N_us;
-    %         N_ud = dof_Darcy_new - dof_pd - 2*Ny;
-    %         N_pd = dof_pd;
-    %         Nu = N_us + N_ud;
-    %         Np = N_ps + N_pd;
+    %===============================================
+    % % Block diagnoal preconditioner
+    maxit = 1000;  restart = 100;  tol = 1e-6;
+    % reordering
+    if strcmp(MC,'Weakly')
+        N_us = 2*dof_us;
+        N_ps = dof_Stokes - N_us;
+        N_ud = dof_Darcy_new - dof_pd - Ny;
+        N_pd = dof_pd;
+        Nu = N_us + N_ud;
+        Np = N_ps + N_pd;
+    else
+        N_us = 2*dof_us;
+        N_ps = dof_Stokes - N_us;
+        N_ud = dof_Darcy_new - dof_pd - 2*Ny;
+        N_pd = dof_pd;
+        Nu = N_us + N_ud;
+        Np = N_ps + N_pd;
+    end
+    % new order: us ud ps pd
+    new_dof_order = [1:N_us, dof_Stokes+1:dof_Stokes+N_ud, N_us+1:dof_Stokes, dof_Stokes+N_ud+1:dof_Stokes+N_ud+N_pd];
+    [~,put_back_order] = sort(new_dof_order);
+    A_reorder = A(new_dof_order,new_dof_order);
+    b_reorder = b(new_dof_order);
+
+    Auu = A_reorder(1:Nu, 1:Nu);
+    Aup = A_reorder(1:Nu, Nu+1:end);
+    Apu = A_reorder(Nu+1:end, 1:Nu);
+    App = A_reorder(Nu+1:end, Nu+1:end);
+
+    Mps = spdiags(0.5*hx*hy*ones(N_ps,1),0,N_ps,N_ps);
+    invMps = spdiags((1/(0.5*hx*hy))*ones(N_ps,1),0,N_ps,N_ps);
+    diag_invMps = (1/(0.5*hx*hy))*ones(N_ps,1);
+    Mpd = spdiags(0.5*hx*hy*ones(N_pd,1),0,N_pd,N_pd);
+    invMpd = spdiags((1/(0.5*hx*hy))*ones(N_pd,1),0,N_pd,N_pd);
+    diag_invMpd = (1/(0.5*hx*hy))*ones(N_pd,1);
+
+
+    weight_s = 100;  weight_d = 1; % a parameter that can be tuned
+    omega_S = weight_s*nu;
+    omega_D = weight_d*K^(-1);
+    Pu = Auu + Aup*[omega_S*invMps, sparse(N_ps,N_pd); sparse(N_pd,N_ps), omega_D*invMpd]*Apu;
+    Pp = [1/omega_S*Mps, sparse(N_ps,N_pd); sparse(N_pd,N_ps), 1/omega_D*Mpd];
+    PA = [Pu, sparse(Nu,Np); sparse(Np,Nu), Pp];
+
+    A_reorder = (A_reorder+A_reorder')/2;
+    PA = (PA+PA')/2;
+
+    %%% ================= Verify inf-sup condition ==================
+    % S = Apu*(Pu)^(-1)*Aup;
+    % I = speye(size(S));
+    % eig_min_Schur = eigs(S + (1e-12)*I, Pp, 6, 'smallestabs');
+    % beta_inf = sqrt(eig_min_Schur);
+    % fprintf('beta_inf = %.2e, \n', beta_inf(1));
+
+    %     kernel = [zeros(Nu,1); ones(N_ps,1)./2; ones(N_pd,1)];
+    %     ANS = A_reorder*kernel;
+
+
+    %% ============== condition number ===================
+    % A_reorder = (A_reorder+A_reorder')/2;
+    % PA = (PA+PA')/2;
+    % eig_max = eigs(A_reorder + (1e-12)*PA, PA, 6, 'largestabs', 'IsSymmetricDefinite', 1);
+    % eig_min = eigs(A_reorder + (1e-12)*PA, PA, 6, 'smallestabs', 'IsSymmetricDefinite', 1);
+    % cond_number = abs(eig_max(1))/abs(eig_min(1));
+    % cond_number_2 = abs(eig_max(1))/abs(eig_min(2));
+    % 
+    % [V,beta_inf] = eigs(A_reorder, PA, 6, 'smallestabs', 'IsSymmetricDefinite', 1);
+    % fprintf('cond_numer = %.2e, cond_number_eff = %.2f\n', cond_number, cond_number_2);
+
+    %% set AMG parameters for Pu
+    amgParam = init_AMG_param;
+    amgParam.print_level = 1;
+    amgParam.amg_type = 'UA';
+    amgParam.max_level = 3;
+    amgParam.n_presmooth = 2;  % number of presmoothing
+    amgParam.n_postsmooth = 2; % number of postsmoothing
+    amgParam.Schwarz_level = 1;
+
+    % get blocks for Schwarz methods
+    [blk_Stokes, blk_Darcy, Blk_Stokes, Blk_Darcy] = generate_block_index(T, E, neighbors, Nx, Ny, dof_us);
+    blocks = [blk_Stokes, sparse(size(blk_Stokes,1),size(blk_Darcy,2)-(Ny+1));
+        sparse(size(blk_Darcy,1),size(blk_Stokes,2)-(Ny+1)), blk_Darcy];
+    %blocks = [Blk_Stokes, sparse(size(Blk_Stokes,1),size(Blk_Darcy,2)-(Ny+1));
+    %          sparse(size(Blk_Darcy,1),size(Blk_Stokes,2)-(Ny+1)), Blk_Darcy];
+    amgParam.Schwarz_blocks = num2cell(blocks',2);
+    for i = 1:length(amgParam.Schwarz_blocks)
+        [~,~,amgParam.Schwarz_blocks{i}] = find(amgParam.Schwarz_blocks{i});
+    end
+
+    % AMG setup for Pu
+    amgData = AMG_Setup(Pu, amgParam);
+
+    %% iterative solver
+    % [u_reorder, iter, residual] = Prec_FGMRES(A_reorder, b_reorder, sparse(length(b),1), [], PA, maxit, restart, tol, 0);
+    % bnorm = norm(b_reorder,2);
+    % residual = residual./bnorm;
+    % [u_reorder, iter] = Prec_FGMRES(A_reorder, b_reorder, zeros(length(b),1), [], @(r)prec_diag_exact(r, Pu, diag_invMps, diag_invMpd, omega), maxit, restart, tol, 0);
+    tic
+    [u_reorder, iter] = Prec_FGMRES(A_reorder, b_reorder, zeros(length(b),1), [], @(r)prec_diag_inexact(r, Pu, diag_invMps, diag_invMpd, omega_S, omega_D, amgParam, amgData), maxit, restart, tol, 0);
+    toc
+    u0 = u_reorder(put_back_order);
+    % semilogy(residual,'r*--'); hold on
+    % % ===============================================
+
+    %% Harmonic Ritz value: (PA^{-1/2}APA^{-1/2}P^{1/2}x = PA^{1/2}b)
+    % A_tilde = PA^(-1/2)*A_reorder*PA^(-1/2);
+    % b_tilde = PA^(-1/2)*b_reorder;
+    % [x_tilde, iter_H, residual_H, H] = Prec_FGMRES(A_tilde, b_tilde, sparse(length(b_tilde),1), [], [], maxit, restart, tol, 0);
+    % rela_residual = residual_H./norm(b_tilde,2);
+    % eig_min = eigs(A_tilde, 20, 'smallestabs');
+    % for k = 1:iter_H
+    %     Hkp = H(1:k+1,1:k);
+    %     Hk = H(1:k,1:k);
+    %     Rv = eigs(Hkp'*Hkp,Hk,k,'smallestabs');
+    %     theta = min(abs(Rv));
+    %     e_Rv(k,1) = min(abs((theta - eig_min(1))));
+    %     for m = 2:20
+    %         temp(m) = theta/abs(eig_min(1))*abs((eig_min(1)-eig_min(m)))/abs((theta-eig_min(m)));
     %     end
-    %     % new order: us ud ps pd
-    %     new_dof_order = [1:N_us, dof_Stokes+1:dof_Stokes+N_ud, N_us+1:dof_Stokes, dof_Stokes+N_ud+1:dof_Stokes+N_ud+N_pd];
-    %     [~,put_back_order] = sort(new_dof_order);
-    %     A_reorder = A(new_dof_order,new_dof_order);
-    %     b_reorder = b(new_dof_order);
-    %
-    %     Auu = A_reorder(1:Nu, 1:Nu);
-    %     Aup = A_reorder(1:Nu, Nu+1:end);
-    %     Apu = A_reorder(Nu+1:end, 1:Nu);
-    %     App = A_reorder(Nu+1:end, Nu+1:end);
-    %
-    %     Mps = spdiags(0.5*hx*hy*ones(N_ps,1),0,N_ps,N_ps);
-    %     invMps = spdiags((1/(0.5*hx*hy))*ones(N_ps,1),0,N_ps,N_ps);
-    %     diag_invMps = (1/(0.5*hx*hy))*ones(N_ps,1);
-    %     Mpd = spdiags(0.5*hx*hy*ones(N_pd,1),0,N_pd,N_pd);
-    %     invMpd = spdiags((1/(0.5*hx*hy))*ones(N_pd,1),0,N_pd,N_pd);
-    %     diag_invMpd = (1/(0.5*hx*hy))*ones(N_pd,1);
-    %
-    %
-    %     weight_s = 100;  weight_d = 1; % a parameter that can be tuned
-    %     omega_S = weight_s*nu;
-    %     omega_D = weight_d*K^(-1);
-    %     Pu = Auu + Aup*[omega_S*invMps, sparse(N_ps,N_pd); sparse(N_pd,N_ps), omega_D*invMpd]*Apu;
-    %     Pp = [1/omega_S*Mps, sparse(N_ps,N_pd); sparse(N_pd,N_ps), 1/omega_D*Mpd];
-    %     PA = [Pu, sparse(Nu,Np); sparse(Np,Nu), Pp];
-    %
-    %     %%% ================= Verify inf-sup condition ==================
-    %     % S = Apu*(Pu)^(-1)*Aup;
-    %     % I = speye(size(S));
-    %     % eig_min_Schur = eigs(S + (1e-12)*I, Pp, 6, 'smallestabs');
-    %     % beta_inf = sqrt(eig_min_Schur);
-    %     % fprintf('beta_inf = %.2e, \n', beta_inf(1));
-    %
-    % %     kernel = [zeros(Nu,1); ones(N_ps,1)./2; ones(N_pd,1)];
-    % %     ANS = A_reorder*kernel;
-    %
-    %
-    %     %%% ============== condition number ===================
-    %     % A_reorder = (A_reorder+A_reorder')/2;
-    %     % PA = (PA+PA')/2;
-    %     % eig_max = eigs(A_reorder + (1e-12)*PA, PA, 6, 'largestabs', 'IsSymmetricDefinite', 1);
-    %     % eig_min = eigs(A_reorder + (1e-12)*PA, PA, 6, 'smallestabs', 'IsSymmetricDefinite', 1);
-    %     % cond_number = abs(eig_max(1))/abs(eig_min(1));
-    %     % cond_number_2 = abs(eig_max(1))/abs(eig_min(2));
-    %     %
-    %     % [V,beta_inf] = eigs(A_reorder, PA, 6, 'smallestabs', 'IsSymmetricDefinite', 1);
-    %     % fprintf('cond_numer = %.2e, cond_number_eff = %.2f\n', cond_number, cond_number_2);
-    %
-    %     % set AMG parameters for Pu
-    % %     amgParam = init_AMG_param;
-    % %     amgParam.print_level = 2;
-    % %     amgParam.amg_type = 'UA';
-    % %     amgParam.max_level = 3;
-    % %     amgParam.n_presmooth = 2; % number of presmoothing
-    % %     amgParam.n_postsmooth = 2; % number of postsmoothing
-    % %     amgParam.Schwarz_level = 0;
-    %
-    % %     % get blocks for Schwarz methods
-    % %     [blk_Stokes, blk_Darcy, Blk_Stokes, Blk_Darcy] = generate_block_index(T, E, neighbors, Nx, Ny, dof_us);
-    % %     blocks = [blk_Stokes, sparse(size(blk_Stokes,1),size(blk_Darcy,2)-(Ny+1));
-    % %               sparse(size(blk_Darcy,1),size(blk_Stokes,2)-(Ny+1)), blk_Darcy];
-    % %     %blocks = [Blk_Stokes, sparse(size(Blk_Stokes,1),size(Blk_Darcy,2)-(Ny+1));
-    % %     %          sparse(size(Blk_Darcy,1),size(Blk_Stokes,2)-(Ny+1)), Blk_Darcy];
-    % %     amgParam.Schwarz_blocks = num2cell(blocks',2);
-    % %     for i = 1:length(amgParam.Schwarz_blocks)
-    % %         [~,~,amgParam.Schwarz_blocks{i}] = find(amgParam.Schwarz_blocks{i});
-    % %     end
-    %
-    %     % AMG setup for Pu
-    %     % amgData = AMG_Setup(Pu, amgParam);
-    %
-    %     [u_reorder,iter,residual] = Prec_FGMRES(A_reorder, b_reorder, sparse(length(b),1), [], PA, maxit, restart, tol, 0);
-    %     % [u_reorder, iter] = Prec_FGMRES(A_reorder, b_reorder, zeros(length(b),1), [], @(r)prec_diag_exact(r, Pu, diag_invMps, diag_invMpd, omega), maxit, restart, tol, 0);
-    %     % [u_reorder, iter] = Prec_FGMRES(A_reorder, b_reorder, zeros(length(b),1), [], @(r)prec_diag_inexact(r, Pu, diag_invMps, diag_invMpd, omega_S, omega_D, amgParam, amgData), maxit, restart, tol, -1);
-    %     u0 = u_reorder(put_back_order);
-    %     % semilogy(residual,'r*--'); hold on
-    %     % % ===============================================
+    %     Fm(k,1) = max(temp);
+    % end
+    % figure;
+    % set(gcf, 'Position', [300,300,400,300]);
+    % semilogy(rela_residual,'o--','color',[0.8500 0.3250 0.0980],'MarkerFaceColor',[0.8500 0.3250 0.0980]); hold on
+    % semilogy(e_Rv,'o--','color', [0.4660 0.6740 0.1880],'MarkerFaceColor',[0.4660 0.6740 0.1880]); 
+    % semilogy(Fm,'o-', 'color', [0 0.4470 0.7410], 'MarkerFaceColor',[0 0.4470 0.7410]);
+    % legend('MINRES','$\min_i|\theta_i^m - \lambda_{\min}|$','Fm','Interpreter','latex');
+    % xlabel('Iteration steps','Interpreter','latex'); ylabel('convergence history','Interpreter','latex');
+
+    
+    %% Deflation
+    % if strcmp(BC,'III')
+    %     S = K*Mpd;
+    %     P_kernel_3 = ones(N_pd,1);  
+    %     PA_kernel_3 = [zeros(Nu,1);zeros(N_ps,1);P_kernel_3(:,1)];
+    %     beta_inf = (nu*K)^(-1);
+    % elseif strcmp(BC,'IV')
+    %     S = 1/nu*Mps;
+    %     P_kernel_3 = ones(N_ps,1); 
+    %     PA_kernel_3 = [zeros(Nu,1);P_kernel_3(1:N_ps,1);zeros(N_pd,1)];
+    %     beta_inf = (nu*K);
+    % end
+    % [solution_reorder_de3, iter_de3, residual_de3] = Prec_FGMRES(A_reorder, b_reorder, sparse(length(b_reorder),1), ...
+    %     [], @(r)prec_deflation_add_copy(beta_inf,S,PA,P_kernel_3,PA_kernel_3,r), maxit, restart, tol, 2);
+    % residual_de3 = residual_de3./bnorm;
+    % 
+    % figure; 
+    % set(gcf, 'Position', [300,300,400,300]);
+    % semilogy(residual,'o-','color',[0.85 0.325 0.098],'MarkerFaceColor',[0.85 0.325 0.098]); hold on; 
+    % semilogy(residual_de3,'o-','color',[0.466 0.674 0.18],'MarkerFaceColor',[0.466 0.674 0.18]);
+    % legend('no deflation','with deflation','Interpreter','latex','FontSize',15,'FontWeight','bold');
+    % xlabel('Iteration steps','Interpreter','latex','FontSize',20,'FontWeight','bold'); 
+    % ylabel('relative residual','Interpreter','latex','FontSize',20,'FontWeight','bold');
+    % ax = gca;
+    % ax.FontWeight = 'bold';
+    % ==========================================================
 
     solution_0 = Proj*Proj_I*u0;
     solution_g = [solution_sg;solution_dg];
@@ -413,8 +474,8 @@ end
 % draw_u(ud1,para.ud1,para.ud1_vec,P2,T,E,number_of_elements,'ud1');
 % draw_u(ud2,para.ud2,para.ud1_vec,P2,T,E,number_of_elements,'ud2');
 % draw_p(pd,para.pd,P2,T,number_of_elements,'pd')
-
-fid=fopen('result_copy.txt','at');
-fprintf(fid, '%.2e\t %.2e\t %.2e\t %.2e\t \n', e_us, e_ps, e_ud, e_pd);
-fclose(fid);
+% 
+% fid=fopen('result_copy.txt','at');
+% fprintf(fid, '%.2e\t %.2e\t %.2e\t %.2e\t \n', e_us, e_ps, e_ud, e_pd);
+% fclose(fid);
 
