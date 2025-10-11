@@ -1,4 +1,4 @@
-function [u, iter, residual] = Prec_FGMRES(A, f, u, M_l, M_r, maxit, restart, tol, print_level)
+function [u, iter, residual, H] = Prec_FGMRES(A, f, u, M_l, M_r, maxit, restart, tol, print_level)
 % Preconditioned Flexible General Minimal Residual Method (Left and Right Preconditioner)
 %
 % BRIEF: 
@@ -205,7 +205,7 @@ while (iter < maxit)
             fprintf(' %4d |  %e  |  %e  | %f |\n', iter-1, residual(iter)/residual(1), residual(iter), residual(iter)/residual(iter-1));
         end
         
-        if ((residual(iter)/residual(1)) < tol || iter > maxit)
+        if ((residual(iter)/residual(1)) < tol || iter > maxit)  % relative residual
             converge = 1;
             break;
         end
@@ -253,20 +253,20 @@ iter = iter - 1;
 residual = residual(1:iter+1);
 
 % print 
-% % if (print_level > 0)
-% %    
-% %     if (iter == maxit)
-% %             fprintf('----------------------------------------------------\n');
-% %             fprintf('   FGMRes reached maximal number of iterations \n');
-% %             fprintf('----------------------------------------------------\n');
-% %     else
-% %             fprintf('----------------------------------------------------\n');
-% %             fprintf('FGMRes converged at iteration %d with relative residual %e\n', iter, residual(iter+1)/residual(1));
-% %             fprintf('----------------------------------------------------\n');
-% % 
-% %     end
+if (print_level > 0)
+   
+    if (iter == maxit)
+            fprintf('----------------------------------------------------\n');
+            fprintf('   FGMRes reached maximal number of iterations \n');
+            fprintf('----------------------------------------------------\n');
+    else
+            fprintf('----------------------------------------------------\n');
+            fprintf('FGMRes converged at iteration %d with relative residual %e\n', iter, residual(iter+1)/residual(1));
+            fprintf('----------------------------------------------------\n');
+
+    end
     
-% % end
+end
 
 end
 

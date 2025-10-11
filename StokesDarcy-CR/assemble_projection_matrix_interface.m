@@ -22,7 +22,7 @@ for i=1:Ny
 %     x2 = vertices_Stokes(1,3); y2 = vertices_Stokes(2,3);
 %     he = abs(y1-y2);
     
-    Proj(dof_Stokes+edge_Darcy_2,edge_Stokes_2) = 1;   % 相当于alpha_2(只固定这一个条件即可)
+    Proj(dof_Stokes+edge_Darcy_2,edge_Stokes_2) = 1;   % alpha_2(only fix this condition)
     
     
     % double check if it is imposed strongly

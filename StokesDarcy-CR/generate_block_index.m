@@ -37,6 +37,7 @@ for j = 1:size(AA,2)
     As1(1:l,j) = temp;
 end
 blk_us1 = sort(As1);
+
 %%%% --------------------- us2 --------------------------------------
 for i = 1:size(As1,1)
     for j = 1:size(As1,2)

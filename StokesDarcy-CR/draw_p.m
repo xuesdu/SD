@@ -12,7 +12,7 @@ end
 % t = ones(1,size(T,2)); T = [T;t];
 % pdesurf(P,T,uh1);
 colormap default; colorbar; view(3);
-title('numerical solution of %s', tit)
+title(sprintf('numerical solution of %s', tit));
 
 % 精确解
 subplot(1,2,2);hold on;
@@ -23,7 +23,7 @@ for n = 1:number_of_elements
         eye(3)*[exact(vertices(1,1),vertices(2,1)); exact(vertices(1,2),vertices(2,2));exact(vertices(1,3),vertices(2,3))],...
         'FaceColor','interp','EdgeColor','interp');
 end
-title('exact solution of %s', tit); view(3);
+title(sprintf('exact solution of %s', tit)); view(3);
 colorbar;
 
 

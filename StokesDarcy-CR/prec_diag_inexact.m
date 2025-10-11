@@ -13,7 +13,7 @@ function [z] = prec_diag_inexact(r, Pu, diag_invMps, diag_invMpd, omega_s, omega
     % preconditioning the velocity part
     %zu = Pu\ru;
     %zu = Prec_CG(Pu, ru, zeros(Nu,1), @(r)AMG_prec(r, 1, amgData, amgParam), 200, 1e-6, 1);
-    zu = Prec_FGMRES(Pu, ru, zeros(Nu,1), [], @(r)AMG_prec(r, 1, amgData, amgParam), 200, 200, 1e-2, 0);
+    zu = Prec_FGMRES(Pu, ru, zeros(Nu,1), [], @(r)AMG_prec(r, 1, amgData, amgParam), 200, 200, 1e-2, 1);
     
     % precondionting the pressure part
     zps = omega_s*(diag_invMps.*rps);
