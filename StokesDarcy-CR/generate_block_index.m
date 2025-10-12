@@ -1,4 +1,4 @@
-function [blk_Stokes, blk_Darcy, Blk_Stokes, Blk_Darcy] = generate_block_index(T, E, neighbors, Nx, Ny, dof_us)
+function [blk_Stokes, blk_Darcy, Blk_Stokes, Blk_Darcy] = generate_block_index(T, E, neighbors, Nx, Ny, dof_us, BC)
 
 number_of_nodes = (Nx+1)*(Ny+1);
 number_of_elements_Stokes = size(T,2)/2;
@@ -52,42 +52,79 @@ blk_us2 = sort(As2);
 blk_Stokes = [blk_us1;blk_us2];
 
 %%%% ---------------------- Darcy domain ----------------------------------
+% % depends on the boundary condition: because we remove dofs treating the
+% Dirichlet condition: u\cdot n = 0
+% % key: generate the new order of dofs
 neighbors_Darcy = neighbors(:,number_of_elements_Stokes+1:end);
-for i = 1:Nx
-    for j = 1:Ny
-        n1 = (i-1)*2*Ny + 2*j-1; % 当前行列对应的单元
-        n2 = n1 + 1; 
-        %%% ud1 
-        E_ud1(1,n1) = (i-1)*(2*Ny+1) + (i-1)*Ny + 2*j;
-        if i == 1
-            E_ud1(2,n1) = 0;
-        else
-            E_ud1(2,n1) = (i-2)*Ny + (i-1)*(2*Ny+1) + j;
-        end
-        E_ud1(3,n1) = E_ud1(1,n1) - 1;
-        
-        E_ud1(1,n2) = E_ud1(1,n1);
-        E_ud1(2,n2) = (i-1)*Ny + i*(2*Ny+1) + j;
-        E_ud1(3,n2) = E_ud1(1,n2) + 1;
-        
-        %%% ud2
-        E_ud2(1,n1) = dof_us + (i-1)*(2*Ny-1) + i*Ny + (j-1)*2 + 1 - Ny;
-        E_ud2(2,n1) = E_ud2(1,n1) - (j-1)*2 - (Ny-j) -1;
-        E_ud2(3,n1) = E_ud2(1,n1) - 1;
-        for k = 1:3
-            neig = neighbors_Darcy(k,n1);
-            if neig == -1
-                E_ud2(k,n1) = 0;
+if strcmp(BC,'I') || strcmp(BC,'IV')   % All edges are Neumann BC(only consider the mass conservation)
+   for i = 1:Nx
+        for j = 1:Ny
+            n1 = (i-1)*2*Ny + 2*j-1; % 当前行列对应的单元
+            n2 = n1 + 1;
+            %%% ud1
+            E_ud1(1,n1) = (i-1)*(2*Ny+1) + (i-1)*Ny + 2*j;
+            if i == 1
+                E_ud1(2,n1) = 0;
+            else
+                E_ud1(2,n1) = (i-2)*Ny + (i-1)*(2*Ny+1) + j;
             end
+            E_ud1(3,n1) = E_ud1(1,n1) - 1;
+
+            E_ud1(1,n2) = E_ud1(1,n1);
+            E_ud1(2,n2) = (i-1)*Ny + i*(2*Ny+1) + j;
+            E_ud1(3,n2) = E_ud1(1,n2) + 1;
+
+            %%% ud2
+            E_ud2(1,n1) = (dof_us- Ny) + (i-1)*(2*Ny+1) + i*Ny + 2*j ;
+            E_ud2(2,n1) = (dof_us- Ny) + (i-1)*Ny + (i-1)*(2*Ny+1) + j;
+            E_ud2(3,n1) = E_ud2(1,n1) - 1;
+
+            E_ud2(1,n2) = E_ud2(1,n1);
+            E_ud2(2,n2) = E_ud2(1,n2) + 2*Ny -(j-1);
+            E_ud2(3,n2) = E_ud2(1,n2) + 1;         
         end
-        E_ud2(1,n2) = E_ud2(1,n1);
-        E_ud2(2,n2) = E_ud2(1,n2) + 2*Ny-1 -(j-1);
-        E_ud2(3,n2) = E_ud2(1,n2) + 1;
-        for k = 1:3
-            neig = neighbors_Darcy(k,n2);
-            if neig == -1   % boundary edge
-                E_ud2(k,n2) = 0;
+    end
+else
+
+    for i = 1:Nx
+        for j = 1:Ny
+            n1 = (i-1)*2*Ny + 2*j-1; % 当前行列对应的单元
+            n2 = n1 + 1;
+            %%% ud1
+            E_ud1(1,n1) = (i-1)*(2*Ny+1) + (i-1)*Ny + 2*j;
+            if i == 1
+                E_ud1(2,n1) = 0;
+            else
+                E_ud1(2,n1) = (i-2)*Ny + (i-1)*(2*Ny+1) + j;
             end
+            E_ud1(3,n1) = E_ud1(1,n1) - 1;
+
+            E_ud1(1,n2) = E_ud1(1,n1);
+            E_ud1(2,n2) = (i-1)*Ny + i*(2*Ny+1) + j;
+            E_ud1(3,n2) = E_ud1(1,n2) + 1;
+
+            %%% ud2
+            E_ud2(1,n1) = (dof_us-Ny) + (i-1)*(2*Ny-1) + i*Ny + (j-1)*2 + 1;
+            E_ud2(2,n1) = E_ud2(1,n1) - (j-1)*2 - (Ny-j) -1;
+            E_ud2(3,n1) = E_ud2(1,n1) - 1;
+
+            for k = 1:3
+                neig = neighbors_Darcy(k,n1);
+                if neig == -1        % boundary edge
+                    E_ud2(k,n1) = 0;
+                end
+            end
+
+            E_ud2(1,n2) = E_ud2(1,n1);
+            E_ud2(2,n2) = E_ud2(1,n2) + 2*Ny-1 -(j-1);
+            E_ud2(3,n2) = E_ud2(1,n2) + 1;
+            for k = 1:3
+                neig = neighbors_Darcy(k,n2);
+                if neig == -1   % boundary edge
+                    E_ud2(k,n2) = 0;
+                end
+            end
+
         end
     end
 end

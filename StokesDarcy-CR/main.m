@@ -5,7 +5,7 @@ clear;
 global xl xr yb yt xbar nu K alpha_BJS
 Gpn = 9;    % Gauss point number
 % I: no kernel; II: a kernel; III: near kernel on Darcy; IV: near kernel on Stokes;
-BC = 'I';
+BC = 'IV';
 % MC = 'Strongly';
 MC = 'Weakly';  % weakly imposing the interface condition
 
@@ -14,7 +14,7 @@ basis_type_trial_p = 200;basis_type_test_p = 200;
 
 e_us = []; e_ps = []; e_ud = []; e_pd = [];
 pp = 0;
-for ch = 0:4
+for ch = 4:4
     pp = pp+1;
     prog = select(1,ch);
     if prog.end == 1
@@ -312,7 +312,7 @@ for ch = 0:4
 
     %% set AMG parameters for Pu
     amgParam = init_AMG_param;
-    amgParam.print_level = 1;
+    amgParam.print_level = 0;
     amgParam.amg_type = 'UA';
     amgParam.max_level = 3;
     amgParam.n_presmooth = 2;  % number of presmoothing
@@ -320,7 +320,7 @@ for ch = 0:4
     amgParam.Schwarz_level = 1;
 
     % get blocks for Schwarz methods
-    [blk_Stokes, blk_Darcy, Blk_Stokes, Blk_Darcy] = generate_block_index(T, E, neighbors, Nx, Ny, dof_us);
+    [blk_Stokes, blk_Darcy, Blk_Stokes, Blk_Darcy] = generate_block_index(T, E, neighbors, Nx, Ny, dof_us, BC);
     blocks = [blk_Stokes, sparse(size(blk_Stokes,1),size(blk_Darcy,2)-(Ny+1));
         sparse(size(blk_Darcy,1),size(blk_Stokes,2)-(Ny+1)), blk_Darcy];
     %blocks = [Blk_Stokes, sparse(size(Blk_Stokes,1),size(Blk_Darcy,2)-(Ny+1));
