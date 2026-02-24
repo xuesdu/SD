@@ -5,7 +5,7 @@ clear;
 global xl xr yb yt xbar nu K alpha_BJS
 Gpn = 9;    % Gauss point number
 % I: no kernel; II: a kernel; III: near kernel on Darcy; IV: near kernel on Stokes;
-BC = 'IV';
+BC = 'I';
 % MC = 'Strongly';
 MC = 'Weakly';  % weakly imposing the interface condition
 
@@ -14,7 +14,7 @@ basis_type_trial_p = 200;basis_type_test_p = 200;
 
 e_us = []; e_ps = []; e_ud = []; e_pd = [];
 pp = 0;
-for ch = 4:4
+for ch = 1:5
     pp = pp+1;
     prog = select(1,ch);
     if prog.end == 1
@@ -310,37 +310,37 @@ for ch = 4:4
     % [V,beta_inf] = eigs(A_reorder, PA, 6, 'smallestabs', 'IsSymmetricDefinite', 1);
     % fprintf('cond_numer = %.2e, cond_number_eff = %.2f\n', cond_number, cond_number_2);
 
-    %% set AMG parameters for Pu
-    amgParam = init_AMG_param;
-    amgParam.print_level = 0;
-    amgParam.amg_type = 'UA';
-    amgParam.max_level = 3;
-    amgParam.n_presmooth = 2;  % number of presmoothing
-    amgParam.n_postsmooth = 2; % number of postsmoothing
-    amgParam.Schwarz_level = 1;
-
-    % get blocks for Schwarz methods
-    [blk_Stokes, blk_Darcy, Blk_Stokes, Blk_Darcy] = generate_block_index(T, E, neighbors, Nx, Ny, dof_us, BC);
-    blocks = [blk_Stokes, sparse(size(blk_Stokes,1),size(blk_Darcy,2)-(Ny+1));
-        sparse(size(blk_Darcy,1),size(blk_Stokes,2)-(Ny+1)), blk_Darcy];
-    %blocks = [Blk_Stokes, sparse(size(Blk_Stokes,1),size(Blk_Darcy,2)-(Ny+1));
-    %          sparse(size(Blk_Darcy,1),size(Blk_Stokes,2)-(Ny+1)), Blk_Darcy];
-    amgParam.Schwarz_blocks = num2cell(blocks',2);
-    for i = 1:length(amgParam.Schwarz_blocks)
-        [~,~,amgParam.Schwarz_blocks{i}] = find(amgParam.Schwarz_blocks{i});
-    end
-
-    % AMG setup for Pu
-    amgData = AMG_Setup(Pu, amgParam);
+    % %% set AMG parameters for Pu
+    % amgParam = init_AMG_param;
+    % amgParam.print_level = 0;
+    % amgParam.amg_type = 'UA';
+    % amgParam.max_level = 3;
+    % amgParam.n_presmooth = 2;  % number of presmoothing
+    % amgParam.n_postsmooth = 2; % number of postsmoothing
+    % amgParam.Schwarz_level = 1;
+    % 
+    % % get blocks for Schwarz methods
+    % [blk_Stokes, blk_Darcy, Blk_Stokes, Blk_Darcy] = generate_block_index(T, E, neighbors, Nx, Ny, dof_us, BC);
+    % blocks = [blk_Stokes, sparse(size(blk_Stokes,1),size(blk_Darcy,2)-(Ny+1));
+    %     sparse(size(blk_Darcy,1),size(blk_Stokes,2)-(Ny+1)), blk_Darcy];
+    % %blocks = [Blk_Stokes, sparse(size(Blk_Stokes,1),size(Blk_Darcy,2)-(Ny+1));
+    % %          sparse(size(Blk_Darcy,1),size(Blk_Stokes,2)-(Ny+1)), Blk_Darcy];
+    % amgParam.Schwarz_blocks = num2cell(blocks',2);
+    % for i = 1:length(amgParam.Schwarz_blocks)
+    %     [~,~,amgParam.Schwarz_blocks{i}] = find(amgParam.Schwarz_blocks{i});
+    % end
+    % 
+    % % AMG setup for Pu
+    % amgData = AMG_Setup(Pu, amgParam);
 
     %% iterative solver
-    % [u_reorder, iter, residual] = Prec_FGMRES(A_reorder, b_reorder, sparse(length(b),1), [], PA, maxit, restart, tol, 0);
+    [u_reorder, iter, residual] = Prec_FGMRES(A_reorder, b_reorder, sparse(length(b),1), [], PA, maxit, restart, tol, 0);
     % bnorm = norm(b_reorder,2);
     % residual = residual./bnorm;
     % [u_reorder, iter] = Prec_FGMRES(A_reorder, b_reorder, zeros(length(b),1), [], @(r)prec_diag_exact(r, Pu, diag_invMps, diag_invMpd, omega), maxit, restart, tol, 0);
-    tic
-    [u_reorder, iter] = Prec_FGMRES(A_reorder, b_reorder, zeros(length(b),1), [], @(r)prec_diag_inexact(r, Pu, diag_invMps, diag_invMpd, omega_S, omega_D, amgParam, amgData), maxit, restart, tol, 0);
-    toc
+    % tic
+    % [u_reorder, iter] = Prec_FGMRES(A_reorder, b_reorder, zeros(length(b),1), [], @(r)prec_diag_inexact(r, Pu, diag_invMps, diag_invMpd, omega_S, omega_D, amgParam, amgData), maxit, restart, tol, 0);
+    % toc
     u0 = u_reorder(put_back_order);
     % semilogy(residual,'r*--'); hold on
     % % ===============================================
