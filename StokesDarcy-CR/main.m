@@ -1,18 +1,20 @@
 % nonconforming CR: Stokes-Darcy equations(CR: velocity; P0: pressure)
 % 201 denotes CR element; 200 denotes P0 element
 % the stabilizer only defined on the interior edges on Stokes domain
+
 clear;
 global xl xr yb yt xbar nu K alpha_BJS
 Gpn = 9;    % Gauss point number
 % I: no kernel; II: a kernel; III: near kernel on Darcy; IV: near kernel on Stokes;
-BC = 'I';
+
+BC = 'I';  % h = 1/2^(ch+1)
 
 basis_type_trial_u = 201;basis_type_test_u = 201;
 basis_type_trial_p = 200;basis_type_test_p = 200;
 
 e_us = []; e_ps = []; e_ud = []; e_pd = [];
 pp = 0;
-for ch = 1:5
+for ch = 1:5  % h = 1/2^(ch+1)
     pp = pp+1;
     prog = select(1,ch);
     if prog.end == 1
