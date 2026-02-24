@@ -6,8 +6,6 @@ global xl xr yb yt xbar nu K alpha_BJS
 Gpn = 9;    % Gauss point number
 % I: no kernel; II: a kernel; III: near kernel on Darcy; IV: near kernel on Stokes;
 BC = 'I';
-% MC = 'Strongly';
-MC = 'Weakly';  % weakly imposing the interface condition
 
 basis_type_trial_u = 201;basis_type_test_u = 201;
 basis_type_trial_p = 200;basis_type_test_p = 200;
@@ -94,26 +92,7 @@ for ch = 1:5
     Ss2 = assemble_stabilizer_element_Stokes('s',para.one,dof_us,dof_us,P,T,neighbors,number_of_elements,Eb_test_u,Eb_trial_u,Gauss_weights_ref_1D,Gauss_nodes_ref_1D,...
         number_of_local_basis_trial_u,number_of_local_basis_test_u,basis_type_trial_u,0,0,basis_type_test_u,0,0);
     Sta_s = gamma_s*[Ss1-Ss2 sparse(dof_us,dof_us);sparse(dof_us,dof_us) Ss1-Ss2]/hk;
-    %%% ======= Kent: \int_e [u\cot n][v\cdot n] + [P_0(u\cdot t)][P_0(v\cdot t)] ds
-    % [Sn11, St11] = assemble_stabilizer_Darcy_copy('s',para.one,dof_us,dof_us,P,T,neighbors,neighbors_Stokes,number_of_elements,Eb_test_u,Eb_trial_u,Gauss_weights_ref_1D,Gauss_nodes_ref_1D,...
-    %     number_of_local_basis_trial_u,number_of_local_basis_test_u,basis_type_trial_u,0,0,1,basis_type_test_u,0,0,1);
-    % [SSn11, SSt11] = assemble_stabilizer_element_Darcy_copy('s',para.one,dof_us,dof_us,P,T,neighbors,neighbors_Stokes,number_of_elements,Eb_test_u,Eb_trial_u,Gauss_weights_ref_1D,Gauss_nodes_ref_1D,...
-    %     number_of_local_basis_trial_u,number_of_local_basis_test_u,basis_type_trial_u,0,0,1,basis_type_test_u,0,0,1);
-    %
-    % [Sn12,St12] = assemble_stabilizer_Darcy_copy('s',para.one,dof_us,dof_us,P,T,neighbors,neighbors_Stokes,number_of_elements,Eb_test_u,Eb_trial_u,Gauss_weights_ref_1D,Gauss_nodes_ref_1D,...
-    %     number_of_local_basis_trial_u,number_of_local_basis_test_u,basis_type_trial_u,0,0,2,basis_type_test_u,0,0,1);
-    % [SSn12,SSt12] = assemble_stabilizer_element_Darcy_copy('s',para.one,dof_us,dof_us,P,T,neighbors,neighbors_Stokes,number_of_elements,Eb_test_u,Eb_trial_u,Gauss_weights_ref_1D,Gauss_nodes_ref_1D,...
-    %     number_of_local_basis_trial_u,number_of_local_basis_test_u,basis_type_trial_u,0,0,2,basis_type_test_u,0,0,1);
-    %
-    % [Sn22,St22] = assemble_stabilizer_Darcy_copy('s',para.one,dof_us,dof_us,P,T,neighbors,neighbors_Stokes,number_of_elements,Eb_test_u,Eb_trial_u,Gauss_weights_ref_1D,Gauss_nodes_ref_1D,...
-    %     number_of_local_basis_trial_u,number_of_local_basis_test_u,basis_type_trial_u,0,0,2,basis_type_test_u,0,0,2);
-    % [SSn22,SSt22] = assemble_stabilizer_element_Darcy_copy('s',para.one,dof_us,dof_us,P,T,neighbors,neighbors_Stokes,number_of_elements,Eb_test_u,Eb_trial_u,Gauss_weights_ref_1D,Gauss_nodes_ref_1D,...
-    %     number_of_local_basis_trial_u,number_of_local_basis_test_u,basis_type_trial_u,0,0,2,basis_type_test_u,0,0,2);
-    % Sn1 = gamma_s*(Sn11-SSn11)/hk; St1 = gamma_s*(St11-SSt11)/hk;
-    % Sn2 = gamma_s*(Sn12-SSn12)/hk; St2 = gamma_s*(St12-SSt12)/hk;
-    % Sn3 = gamma_s*(Sn22-SSn22)/hk; St3 = gamma_s*(St22-SSt22)/hk;
-    % Sn = [Sn1 Sn2; Sn2' Sn3]; St = [St1 St2; St2' St3];
-    % Sta_s = Sn + St;
+    
     % =========== the jump term on the interface(on Stokes domain) ========
     Ss_I1 = assemble_matrix_interface('s',para.one,dof_us,dof_us,P,T,Inter,Eb_test_u,Eb_trial_u,Gauss_weights_ref_1D,Gauss_nodes_ref_1D,number_of_local_basis_trial_u,number_of_local_basis_test_u,basis_type_trial_u,0,0,basis_type_test_u,0,0);
     Ss_I1 = gamma_d*Ss_I1/hk;
@@ -216,12 +195,8 @@ for ch = 1:5
     A = Proj'*A*Proj; b = Proj'*b;
 
     % Treat mass conservation
-    dof_Darcy_new = size(b,1)-dof_Stokes;  % the dofs after treating the boundary conditions
-    if strcmp(MC,'Weakly')
-        Proj_I = assemble_projection_matrix_interface(dof_Stokes,dof_Darcy_new,E,Inter,Ny);
-    else
-        Proj_I = assemble_projection_matrix_interface_Strongly(dof_Stokes,dof_Darcy_new,E,Inter,Ny);
-    end
+    dof_Darcy_new = size(b,1)-dof_Stokes;  % the dofs after treating the boundary condition
+    Proj_I = assemble_projection_matrix_interface(dof_Stokes,dof_Darcy_new,E,Inter,Ny);
     A = Proj_I'*A*Proj_I; b = Proj_I'*b;
 
 
@@ -244,21 +219,13 @@ for ch = 1:5
     % % Block diagnoal preconditioner
     maxit = 1000;  restart = 100;  tol = 1e-6;
     % reordering
-    if strcmp(MC,'Weakly')
-        N_us = 2*dof_us;
-        N_ps = dof_Stokes - N_us;
-        N_ud = dof_Darcy_new - dof_pd - Ny;
-        N_pd = dof_pd;
-        Nu = N_us + N_ud;
-        Np = N_ps + N_pd;
-    else
-        N_us = 2*dof_us;
-        N_ps = dof_Stokes - N_us;
-        N_ud = dof_Darcy_new - dof_pd - 2*Ny;
-        N_pd = dof_pd;
-        Nu = N_us + N_ud;
-        Np = N_ps + N_pd;
-    end
+    N_us = 2*dof_us;
+    N_ps = dof_Stokes - N_us;
+    N_ud = dof_Darcy_new - dof_pd - Ny;
+    N_pd = dof_pd;
+    Nu = N_us + N_ud;
+    Np = N_ps + N_pd;
+    
     % new order: us ud ps pd
     new_dof_order = [1:N_us, dof_Stokes+1:dof_Stokes+N_ud, N_us+1:dof_Stokes, dof_Stokes+N_ud+1:dof_Stokes+N_ud+N_pd];
     [~,put_back_order] = sort(new_dof_order);
@@ -288,27 +255,13 @@ for ch = 1:5
     A_reorder = (A_reorder+A_reorder')/2;
     PA = (PA+PA')/2;
 
-    %%% ================= Verify inf-sup condition ==================
-    % S = Apu*(Pu)^(-1)*Aup;
-    % I = speye(size(S));
-    % eig_min_Schur = eigs(S + (1e-12)*I, Pp, 6, 'smallestabs');
-    % beta_inf = sqrt(eig_min_Schur);
-    % fprintf('beta_inf = %.2e, \n', beta_inf(1));
-
-    %     kernel = [zeros(Nu,1); ones(N_ps,1)./2; ones(N_pd,1)];
-    %     ANS = A_reorder*kernel;
-
-
     %% ============== condition number ===================
-    % A_reorder = (A_reorder+A_reorder')/2;
-    % PA = (PA+PA')/2;
-    % eig_max = eigs(A_reorder + (1e-12)*PA, PA, 6, 'largestabs', 'IsSymmetricDefinite', 1);
-    % eig_min = eigs(A_reorder + (1e-12)*PA, PA, 6, 'smallestabs', 'IsSymmetricDefinite', 1);
-    % cond_number = abs(eig_max(1))/abs(eig_min(1));
-    % cond_number_2 = abs(eig_max(1))/abs(eig_min(2));
-    % 
-    % [V,beta_inf] = eigs(A_reorder, PA, 6, 'smallestabs', 'IsSymmetricDefinite', 1);
-    % fprintf('cond_numer = %.2e, cond_number_eff = %.2f\n', cond_number, cond_number_2);
+    eig_max = eigs(A_reorder + (1e-12)*PA, PA, 6, 'largestabs', 'IsSymmetricDefinite', 1);
+    eig_min = eigs(A_reorder + (1e-12)*PA, PA, 6, 'smallestabs', 'IsSymmetricDefinite', 1);
+    cond_number = abs(eig_max(1))/abs(eig_min(1));
+    cond_number_eff = abs(eig_max(1))/abs(eig_min(2));
+
+    fprintf('cond_numer = %.2e, cond_number_eff = %.2f\n', cond_number, cond_number_eff);
 
     % %% set AMG parameters for Pu
     % amgParam = init_AMG_param;
@@ -343,61 +296,7 @@ for ch = 1:5
     % toc
     u0 = u_reorder(put_back_order);
     % semilogy(residual,'r*--'); hold on
-    % % ===============================================
-
-    %% Harmonic Ritz value: (PA^{-1/2}APA^{-1/2}P^{1/2}x = PA^{1/2}b)
-    % A_tilde = PA^(-1/2)*A_reorder*PA^(-1/2);
-    % b_tilde = PA^(-1/2)*b_reorder;
-    % [x_tilde, iter_H, residual_H, H] = Prec_FGMRES(A_tilde, b_tilde, sparse(length(b_tilde),1), [], [], maxit, restart, tol, 0);
-    % rela_residual = residual_H./norm(b_tilde,2);
-    % eig_min = eigs(A_tilde, 20, 'smallestabs');
-    % for k = 1:iter_H
-    %     Hkp = H(1:k+1,1:k);
-    %     Hk = H(1:k,1:k);
-    %     Rv = eigs(Hkp'*Hkp,Hk,k,'smallestabs');
-    %     theta = min(abs(Rv));
-    %     e_Rv(k,1) = min(abs((theta - eig_min(1))));
-    %     for m = 2:20
-    %         temp(m) = theta/abs(eig_min(1))*abs((eig_min(1)-eig_min(m)))/abs((theta-eig_min(m)));
-    %     end
-    %     Fm(k,1) = max(temp);
-    % end
-    % figure;
-    % set(gcf, 'Position', [300,300,400,300]);
-    % semilogy(rela_residual,'o--','color',[0.8500 0.3250 0.0980],'MarkerFaceColor',[0.8500 0.3250 0.0980]); hold on
-    % semilogy(e_Rv,'o--','color', [0.4660 0.6740 0.1880],'MarkerFaceColor',[0.4660 0.6740 0.1880]); 
-    % semilogy(Fm,'o-', 'color', [0 0.4470 0.7410], 'MarkerFaceColor',[0 0.4470 0.7410]);
-    % legend('MINRES','$\min_i|\theta_i^m - \lambda_{\min}|$','Fm','Interpreter','latex');
-    % xlabel('Iteration steps','Interpreter','latex'); ylabel('convergence history','Interpreter','latex');
-
-    
-    %% Deflation
-    % if strcmp(BC,'III')
-    %     S = K*Mpd;
-    %     P_kernel_3 = ones(N_pd,1);  
-    %     PA_kernel_3 = [zeros(Nu,1);zeros(N_ps,1);P_kernel_3(:,1)];
-    %     beta_inf = (nu*K)^(-1);
-    % elseif strcmp(BC,'IV')
-    %     S = 1/nu*Mps;
-    %     P_kernel_3 = ones(N_ps,1); 
-    %     PA_kernel_3 = [zeros(Nu,1);P_kernel_3(1:N_ps,1);zeros(N_pd,1)];
-    %     beta_inf = (nu*K);
-    % end
-    % [solution_reorder_de3, iter_de3, residual_de3] = Prec_FGMRES(A_reorder, b_reorder, sparse(length(b_reorder),1), ...
-    %     [], @(r)prec_deflation_add_copy(beta_inf,S,PA,P_kernel_3,PA_kernel_3,r), maxit, restart, tol, 2);
-    % residual_de3 = residual_de3./bnorm;
-    % 
-    % figure; 
-    % set(gcf, 'Position', [300,300,400,300]);
-    % semilogy(residual,'o-','color',[0.85 0.325 0.098],'MarkerFaceColor',[0.85 0.325 0.098]); hold on; 
-    % semilogy(residual_de3,'o-','color',[0.466 0.674 0.18],'MarkerFaceColor',[0.466 0.674 0.18]);
-    % legend('no deflation','with deflation','Interpreter','latex','FontSize',15,'FontWeight','bold');
-    % xlabel('Iteration steps','Interpreter','latex','FontSize',20,'FontWeight','bold'); 
-    % ylabel('relative residual','Interpreter','latex','FontSize',20,'FontWeight','bold');
-    % ax = gca;
-    % ax.FontWeight = 'bold';
-    % ==========================================================
-
+ 
     solution_0 = Proj*Proj_I*u0;
     solution_g = [solution_sg;solution_dg];
     solution = solution_0 + solution_g;
@@ -455,16 +354,6 @@ for ch = 1:5
 
 end
 %%%
-
-% V = Proj*Proj_I*V;
-% us1 = V(1:dof_us, 1);
-% us2 = V(dof_us+1:dof_us*2, 1);
-% ud1 = V(dof_us*2+1:dof_us*2+dof_ud, 1);
-% ud2 = V(dof_us*2+dof_ud+1:dof_us*2+dof_ud*2,1);
-% ps = V(dof_us*2+dof_ud*2+1:dof_us*2+dof_ud*2+dof_ps,1);
-% pd = V(dof_us*2+dof_ud*2+dof_ps+1:end,1);
-
-
 % P1 = P(:,1:(Nx+1)*(Ny+1));
 % draw_u(us1,para.us1,para.us1_vec,P1,T,E,number_of_elements,'us1');
 % draw_u(us2,para.us2,para.us2_vec,P1,T,E,number_of_elements,'us2');
