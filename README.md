@@ -6,15 +6,17 @@ This repository contains source code and related instructions for the purpose of
 
 
 ### Prerequisites
-
-```Matlab Language```
+    ```
+	Matlab Language
+	```
 
 
 ### Instructions
 
 Clone this repo into the location of your choice.
-
-```git clone https://github.com/xuesdu/SD.git```
+	```
+	git clone https://github.com/xuesdu/SD.git
+	```
 
 
 There are two main figures and six main tables about the numerical results in the article, Figures 3-4 and Tables 3-11. Two different finite-element schemes are used to generate these results. 
