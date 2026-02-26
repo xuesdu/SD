@@ -10,8 +10,11 @@ Clone this repo into the location of your choice.
 git clone https://github.com/xuesdu/SD.git
 
 There are two main figures and six main tables about the numerical results in the article, Figures 3-4 and Tables 3-11. Two different finite-element schemes are used to generate these results. 
+
 	•	For different mesh size h, modify “ch = 0:5” in the “main.m” function (line-19 for the “StokesDarcy-P1+RT0” and line-17 for the “StokesDarcy-CR” ) which denotes h = 1/(2^{ch+1}).
+
 	•	The program involves modifying the values of parameters mu and K. These values can be adjusted by modifying the functions “fun_mu.m” and “fun_K.m” in the “ex1” folder. 
+	
 	•	For different boundary conditions, modify BC='I' (or 'II', 'III', 'IV') in the “main.m” function (line-17 for the “StokesDarcy-P1+RT0” and line-10 for the “StokesDarcy-CR” ), corresponding to the four boundary conditions in the article.
 
 For Sec 5.1,  run figure_convergence.m in the two folder, respectively, to get the figures 3-4.
