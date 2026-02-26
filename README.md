@@ -1,16 +1,14 @@
 # Parameter-Robust Preconditioners for the Stokes-Darcy Coupled Problem Without Fractional Operators
 
-## W.M. Boon, X. Hu, X. Wang
+### W.M. Boon, X. Hu, X. Wang
 
 This repository contains source code and related instructions for the purpose of reproducing the figures and results contained in the article mentioned above. While these files will remain as-is, any substantial developments will be posted to a more general repository.
 
----
 
 ### Prerequisites
 
 ```Matlab Language```
 
----
 
 ### Instructions
 
