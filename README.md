@@ -4,16 +4,19 @@
 
 This repository contains source code and related instructions for the purpose of reproducing the figures and results contained in the article mentioned above. While these files will remain as-is, any substantial developments will be posted to a more general repository.
 
+---
+
 ### Prerequisites
 
-	• Matlab Language
+```Matlab Language```
+
+---
 
 ### Instructions
 
 Clone this repo into the location of your choice.
 
-    • git clone https://github.com/xuesdu/SD.git
-
+```git clone https://github.com/xuesdu/SD.git```
 
 
 There are two main figures and six main tables about the numerical results in the article, Figures 3-4 and Tables 3-11. Two different finite-element schemes are used to generate these results. 
@@ -28,7 +31,6 @@ There are two main figures and six main tables about the numerical results in th
 	 (line-17 for the "StokesDarcy-P1+RT0" and line-10 for the "StokesDarcy-CR"), 
 	 corresponding to the four boundary conditions in the article.
 
----	 
 
 For Sec 5.1,  ```run figure_convergence.m``` in the two folder, respectively, to get the figures 3-4.
 
