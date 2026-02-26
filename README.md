@@ -1,18 +1,21 @@
-Parameter-Robust Preconditioners for the Stokes-Darcy Coupled Problem Without fractional Operators
-––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
-W.M. Boon, X. Hu, X. Wang
+# Parameter-Robust Preconditioners for the Stokes-Darcy Coupled Problem Without fractional Operators
+
+–––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+
+### W.M. Boon, X. Hu, X. Wang
 
 This repository contains source code and related instructions for the purpose of reproducing the figures and results contained in the article mentioned above. While these files will remain as-is, any substantial developments will be posted to a more general repository.
 
-Prerequisites
+### Prerequisites
 
 	•	Matlab Language
 
-Instructions
+### Instructions
 
 Clone this repo into the location of your choice.
 
 git clone https://github.com/xuesdu/SD.git
+
 
 There are two main figures and six main tables about the numerical results in the article, Figures 3-4 and Tables 3-11. Two different finite-element schemes are used to generate these results. 
 
